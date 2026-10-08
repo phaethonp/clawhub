@@ -65,10 +65,17 @@ export async function rails<T>(path: string, options: RequestOptions = {}): Prom
       (json && typeof json === "object" && ("error" in json || "message" in json)
         ? String((json as Record<string, unknown>).error ?? (json as Record<string, unknown>).message)
         : null) ?? `Request failed (${response.status}).`;
-    // Rails answers a missing, expired or revoked token with 401, or with 422
-    // and "Error::AuthorizationError" (Api::BaseController). Both end the
-    // session and read as 401 to callers.
-    const unauthorized = response.status === 401 || message.includes("AuthorizationError");
+    // Rails answers a missing, expired or revoked token with 401
+    // (Api::BaseController), except under AuthController (/auth/me), whose
+    // own handler answers 422 with the error's message: "Error::
+    // AuthorizationError", "Token is invalid or revoked." (every sign-in issues
+    // a new token and revokes the previous one, so signing in from another
+    // browser ends this one), "Token owner not found.". All end the session
+    // and read as 401 to callers.
+    const unauthorized =
+      response.status === 401 ||
+      (path.startsWith("/auth/me") && response.status === 422) ||
+      /AuthorizationError|invalid or revoked|Token owner not found|Signature has expired|Invalid token/i.test(message);
     if (unauthorized && options.signedIn !== false && options.token === undefined) session.clear();
     throw new RailsError(unauthorized ? 401 : response.status, message);
   }

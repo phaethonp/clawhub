@@ -1,0 +1,127 @@
+{
+  "src/components/AppProviders.tsx": {
+    "name": 1
+  },
+  "src/components/Footer.tsx": {
+    "name": 2
+  },
+  "src/components/HomeBringSkillsSection.tsx": {
+    "name": 4
+  },
+  "src/components/HomePopularPublishersSection.tsx": {
+    "name": 1
+  },
+  "src/components/PluginVersionsPanel.tsx": {
+    "host": 1
+  },
+  "src/components/PublisherListItem.tsx": {
+    "name": 2
+  },
+  "src/components/SkillOwnershipPanel.tsx": {
+    "name": 1
+  },
+  "src/components/SkillPublishSuccessDialog.tsx": {
+    "name": 2
+  },
+  "src/components/artifacts/artifactStatus.ts": {
+    "name": 2
+  },
+  "src/components/dashboard/DashboardCatalogView.tsx": {
+    "name": 1
+  },
+  "src/components/dashboard/DashboardWelcome.tsx": {
+    "name": 3
+  },
+  "src/components/skillDetailUtils.ts": {
+    "name": 3
+  },
+  "src/lib/analyticsConsent.ts": {
+    "host": 2
+  },
+  "src/lib/authErrorMessage.ts": {
+    "name": 2
+  },
+  "src/lib/convexError.ts": {
+    "name": 2
+  },
+  "src/lib/detectRelativeReadmeAssets.ts": {
+    "name": 1
+  },
+  "src/lib/docsAuth.ts": {
+    "host": 1
+  },
+  "src/lib/googleAnalytics.ts": {
+    "name": 10,
+    "host": 1
+  },
+  "src/lib/nav-items.ts": {
+    "name": 1
+  },
+  "src/lib/og.ts": {
+    "name": 6
+  },
+  "src/lib/packageApi.ts": {
+    "name": 2
+  },
+  "src/lib/publicRegistry.ts": {
+    "name": 2,
+    "host": 1
+  },
+  "src/lib/rehypeProxyImages.ts": {
+    "name": 1
+  },
+  "src/lib/securityAuditExport.ts": {
+    "name": 3
+  },
+  "src/lib/securityHeaders.ts": {
+    "host": 1
+  },
+  "src/lib/site.ts": {
+    "description": 1,
+    "name": 1,
+    "host": 1
+  },
+  "src/lib/skillsShCatalog.ts": {
+    "name": 1
+  },
+  "src/routes/-management/FeaturedEditorial.tsx": {
+    "name": 1
+  },
+  "src/routes/-management/FeaturedRecommendations.tsx": {
+    "name": 1
+  },
+  "src/routes/-management/ManagedMcpTools.tsx": {
+    "name": 1
+  },
+  "src/routes/-management/RecentPushesPage.tsx": {
+    "name": 1
+  },
+  "src/routes/-management/SearchInsightsPage.tsx": {
+    "name": 4
+  },
+  "src/routes/account-banned.tsx": {
+    "name": 2
+  },
+  "src/routes/auth/docs.tsx": {
+    "name": 3
+  },
+  "src/routes/import.tsx": {
+    "name": 5,
+    "host": 1
+  },
+  "src/routes/official/index.tsx": {
+    "name": 2
+  },
+  "src/routes/plugins/publish.tsx": {
+    "name": 2
+  },
+  "src/routes/settings.tsx": {
+    "name": 3
+  },
+  "src/routes/skills-sh/$owner/$repo/$slug.tsx": {
+    "name": 1
+  },
+  "src/routes/skills/publish.tsx": {
+    "name": 4
+  }
+}

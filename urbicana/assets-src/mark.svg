@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Urbicana interim mark: a geometric U on an ink tile. Drawn here, no font, no third-party artwork. -->
+  <rect x="0" y="0" width="64" height="64" rx="14" fill="#17171a"/>
+  <path d="M20 15 V33 A12 12 0 0 0 44 33 V15" fill="none" stroke="#f6f5f3" stroke-width="9" stroke-linecap="round"/>
+</svg>

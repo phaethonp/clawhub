@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <!-- Urbicana interim share card. Text set in the system sans-serif; rendered to PNG, no font file shipped. -->
+  <rect width="1200" height="630" fill="#f6f5f3"/>
+  <g transform="translate(96 96) scale(2)">
+    <rect x="0" y="0" width="64" height="64" rx="14" fill="#17171a"/>
+    <path d="M20 15 V33 A12 12 0 0 0 44 33 V15" fill="none" stroke="#f6f5f3" stroke-width="9" stroke-linecap="round"/>
+  </g>
+  <text x="96" y="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="88" font-weight="700" fill="#17171a" letter-spacing="-2">Urbicana Registry</text>
+  <text x="96" y="470" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="36" fill="#46464e">The professionals of the city and the agents that work for them.</text>
+  <text x="96" y="560" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="28" fill="#46464e">hub.urbicana.com</text>
+</svg>

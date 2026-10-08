@@ -1,0 +1,71 @@
+# The Urbicana fork of ClawHub
+
+`phaethonp/clawhub` is `openclaw/clawhub` with Urbicana's identity and, later,
+Urbicana's data wired underneath. It serves hub.urbicana.com.
+
+**Rule: upstream's files are never edited.** Everything Urbicana adds lives in
+`urbicana/`. Proof at any time:
+
+```bash
+git diff --stat main...urbicana -- . ':!urbicana'
+```
+
+must print nothing.
+
+## Branches
+
+- `main`: an exact copy of `upstream/main` (openclaw/clawhub). Only ever
+  fast-forwarded from upstream; never committed to.
+- `urbicana`: Urbicana's work. `main` is merged into it.
+
+## How the brand is applied
+
+| Piece | File | How |
+| --- | --- | --- |
+| Name, description, domain | `brand.ts` | the only place they are written |
+| Renames in upstream's source | `rename.ts` | applied while the app is compiled; whole words only, so `getClawHubSiteUrl`, the `clawhub` CLI, packages and `CLAWHUB_*` stay |
+| Rename counts | `rename-manifest.json` | how many renames each upstream file gets; a change fails the check |
+| Images, icons, manifest | `public/` | served at upstream's own paths, so no reference changes |
+| Files not served | `assets.ts` `NOT_SERVED` | upstream's registry discovery and security contact; 404 in dev, deleted from the build |
+| Build hook | `plugin.ts`, `vite.config.ts` | upstream's config plus the plugin; start with `--config urbicana/vite.config.ts` |
+| Check | `check.ts` | runs on every build and dev start |
+
+## Run it
+
+```bash
+cd ~/clawhub
+VITE_CONVEX_URL=https://wry-manatee-359.convex.cloud \
+VITE_CONVEX_SITE_URL=https://wry-manatee-359.convex.site \
+./node_modules/.bin/vite dev --config urbicana/vite.config.ts --port 3010
+```
+
+The Convex address is ClawHub's public backend, read-only for the pages until
+Urbicana's data is wired. Upstream's own `bun run dev` runs the server under
+Bun, whose first server-side fetch fails here; the command above uses Node.
+
+## Syncing from upstream
+
+1. `git fetch upstream`
+2. `git checkout main && git merge --ff-only upstream/main && git push origin main`
+3. `git checkout urbicana && git merge main`. Upstream's files were never
+   edited here, so this has no conflicts.
+4. `bun install`
+5. `bun urbicana/check.ts`. If it fails it names each file:
+   - **renames recorded X, found Y**: upstream changed text containing
+     "ClawHub" or "clawhub.ai" in that file. Read the change. If the rename
+     is right, run `bun urbicana/check.ts --update`; if a new occurrence
+     must not be renamed, narrow the rule in `rename.ts`.
+   - **upstream file with no Urbicana replacement**: upstream added a public
+     file. If it is ClawHub's art, add a replacement to `public/` (through
+     `make-assets.sh`); if it is not brand, add it to `NOT_BRAND` in
+     `assets.ts`; if it announces ClawHub's services, add it to `NOT_SERVED`.
+   - **replaces nothing**: upstream renamed or removed that file. Find where
+     its reference moved and rename the replacement to match.
+6. Start the site and look at `/`, `/skills`, `/official`, a skill page, a
+   publisher page and a missing page, in light and dark: nothing says
+   ClawHub, no lobster art.
+7. Record the merge in this file's log below.
+
+## Log
+
+- 2026-10-08: fork created from upstream `c23e34ad`; brand layer added.

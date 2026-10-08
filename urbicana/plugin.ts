@@ -16,6 +16,7 @@ import { dirname, extname, join } from "node:path";
 import type { Alias, Plugin, UserConfig } from "vite";
 import { NOT_SERVED, replacements } from "./assets";
 import { checkAll, repoRoot } from "./check";
+import { HTTP_ROUTES, tokenFromCookie } from "./data/http";
 import { isRenamedSource, rename } from "./rename";
 
 const CONTENT_TYPES: Record<string, string> = {
@@ -113,6 +114,26 @@ export function urbicana(): Plugin {
           res.statusCode = 502;
           res.setHeader("Content-Type", "application/json");
           res.end(JSON.stringify({ error: `Rails is not reachable at ${railsOrigin}: ${String(error)}` }));
+        }
+      });
+
+      // Development: ClawHub's public API paths its pages fetch directly
+      // (data/http.ts), answered before ClawHub's own /api/** handler.
+      server.middlewares.use(async (req, res, next) => {
+        const path = (req.url ?? "").split("?")[0];
+        const route = path.startsWith("/api/") ? HTTP_ROUTES[path] : undefined;
+        if (!route) return next();
+        try {
+          const url = new URL(req.url ?? "/", "http://localhost");
+          const token = tokenFromCookie(req.headers.cookie);
+          const { status, body } = await route(url, token, railsOrigin);
+          res.statusCode = status;
+          res.setHeader("Content-Type", "application/json");
+          res.end(JSON.stringify(body));
+        } catch (error) {
+          res.statusCode = 502;
+          res.setHeader("Content-Type", "application/json");
+          res.end(JSON.stringify({ error: String(error) }));
         }
       });
 

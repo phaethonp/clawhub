@@ -3,16 +3,18 @@
 // In the browser during development the fork's own server forwards /urbicana-api to
 // Rails (plugin.ts), so no CORS entry is needed for localhost. A deployed
 // site sets VITE_URBICANA_RAILS_URL to the API's origin; Rails already
-// allows any *.urbicana.com origin. On the server (route loaders) there is
-// no member token yet, so signed-in reads return nothing there and the page
-// fills in once the browser has loaded.
+// allows any *.urbicana.com origin. On the server (route loaders) the
+// member's token comes from the session cookie of the request being rendered.
 
-import { session } from "./session";
+import { currentToken, session } from "./session";
 
 const DEV_SERVER_RAILS = "http://localhost:5000";
 
 function base() {
-  const configured = (import.meta.env.VITE_URBICANA_RAILS_URL as string | undefined)?.replace(/\/+$/, "");
+  // import.meta.env exists in code Vite serves; the fork's own server code
+  // (plugin.ts, http.ts) always passes `origin` and never reaches here.
+  const env = (import.meta as { env?: Record<string, string | undefined> }).env;
+  const configured = env?.VITE_URBICANA_RAILS_URL?.replace(/\/+$/, "");
   if (typeof window !== "undefined") return configured ? `${configured}/api/v1` : "/urbicana-api";
   const server = configured ?? process.env.URBICANA_RAILS_URL ?? DEV_SERVER_RAILS;
   return `${server.replace(/\/+$/, "")}/api/v1`;
@@ -33,12 +35,18 @@ type RequestOptions = {
   body?: unknown;
   // Send the member's token. Without one the request is not made.
   signedIn?: boolean;
+  // The member's token when the caller has it from elsewhere (the fork's
+  // server reads it from the session cookie); otherwise this browser's.
+  token?: string | null;
+  // The Rails origin when called from the fork's server.
+  origin?: string;
 };
 
 export async function rails<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const token = session.token();
+  const token = options.token !== undefined ? options.token : await currentToken();
   if (options.signedIn !== false && !token) throw new RailsError(401, "Sign in required.");
-  const url = new URL(`${base()}${path}`, typeof window !== "undefined" ? window.location.origin : undefined);
+  const root = options.origin ? `${options.origin.replace(/\/+$/, "")}/api/v1` : base();
+  const url = new URL(`${root}${path}`, typeof window !== "undefined" ? window.location.origin : undefined);
   for (const [key, value] of Object.entries(options.query ?? {})) {
     if (value !== undefined && value !== null && value !== "") url.searchParams.set(key, String(value));
   }
@@ -61,7 +69,7 @@ export async function rails<T>(path: string, options: RequestOptions = {}): Prom
     // and "Error::AuthorizationError" (Api::BaseController). Both end the
     // session and read as 401 to callers.
     const unauthorized = response.status === 401 || message.includes("AuthorizationError");
-    if (unauthorized && options.signedIn !== false) session.clear();
+    if (unauthorized && options.signedIn !== false && options.token === undefined) session.clear();
     throw new RailsError(unauthorized ? 401 : response.status, message);
   }
   return json as T;

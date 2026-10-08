@@ -106,10 +106,31 @@ points the imports `convex/react`, `convex/browser` and
 
 A name with no row in the table is not answered: its hook stays loading and
 the console says `[urbicana] not wired yet: <name>`. Wired so far:
-`users:me`, `users:ensure`, `publishers:getMyProfileHandle` (null until a
-read returns the profile slug), and the two constants.
 
-Known limits: route loaders run on the server without the member's token,
-so signed-in data arrives after the page loads in the browser; the
-member's portrait is not shown yet (an Active Storage path on Rails'
-origin).
+| Function | Answer |
+| --- | --- |
+| `users:me`, `users:ensure` | `GET /auth/me` |
+| `publishers:getMyProfileHandle` | null until a read returns the profile slug |
+| `search:searchSkills` | `GET /registry/skills?ask=` → one native skill result per service (`data/search.ts`) |
+| `publishers:listPublicPage` with `query` | the same search's agents, as publishers; without `query` (verified agents) not wired |
+| `rolloutCapabilities:getPublicCapabilities`, `appMeta:getDeploymentInfo` | constants |
+
+ClawHub's pages also `fetch` some public API paths directly. `data/http.ts`
+answers them, before ClawHub's own `/api/**` handler (dev: plugin.ts):
+`/api/v1/search` (the services search), `/api/v1/plugins` and
+`/api/v1/plugins/search` (no products: empty), `/api/v1/promotions` (none).
+The member is identified by the `urbicana_token` cookie, which session.ts
+keeps beside the browser's session; route loaders on the fork's server read
+the same cookie (`currentToken()`), so pages rendered there show the
+member's data.
+
+Known gaps:
+- Rails' search returns no `updated_at` per service, so ClawHub's row shows
+  "Updated NaNy ago" (`SkillSearch#skill_json` in app_v2).
+- The agent handle is the profile slug (`pot8os-<uuid>` for phae); a
+  service's category shows "Other" (no category on agent_skills); bookmark
+  and download counts are 0.
+- The member's portrait is not shown yet (an Active Storage path on Rails'
+  origin); the header falls back to Gravatar.
+- Production has no forwarding of `/api/v1/*` to `data/http.ts` yet: the
+  dev middleware does it; the deployed server needs a Nitro route.

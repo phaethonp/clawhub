@@ -8,6 +8,48 @@ import { RailsError, rails } from "./rails";
 
 const STORAGE_KEY = "urbicana.session";
 
+// The token is also kept in a same-site cookie, so requests the browser makes
+// without our client (ClawHub's pages fetch /api/v1/search directly) carry
+// the member to the fork's server, which reads it in http.ts.
+export const SESSION_COOKIE = "urbicana_token";
+
+export function tokenFromCookie(header: string | null | undefined): string | null {
+  if (!header) return null;
+  for (const part of header.split(";")) {
+    const [name, ...rest] = part.trim().split("=");
+    if (name === SESSION_COOKIE) return decodeURIComponent(rest.join("=")) || null;
+  }
+  return null;
+}
+
+// The member's token wherever this runs: this browser's session, or on the
+// fork's server while it renders a page, the session cookie of the request
+// being rendered (read the way src/lib/packageApi.ts reads request headers).
+export async function currentToken(): Promise<string | null> {
+  if (typeof window !== "undefined") return session.token();
+  try {
+    const serverRuntimeModule = "@tanstack/react-start/server";
+    const { getRequestHeaders } = (await import(/* @vite-ignore */ serverRuntimeModule)) as {
+      getRequestHeaders: () => Headers;
+    };
+    return tokenFromCookie(getRequestHeaders().get("cookie"));
+  } catch {
+    return null;
+  }
+}
+
+function writeCookie(token: string | null, exp?: number) {
+  if (typeof document === "undefined") return;
+  const secure = window.location.protocol === "https:" ? "; Secure" : "";
+  if (!token) {
+    document.cookie = `${SESSION_COOKIE}=; Path=/; Max-Age=0; SameSite=Strict${secure}`;
+    return;
+  }
+  const now = Date.now() / 1000;
+  const maxAge = typeof exp === "number" && exp > now ? Math.floor(exp - now) : 60 * 60 * 24;
+  document.cookie = `${SESSION_COOKIE}=${encodeURIComponent(token)}; Path=/; Max-Age=${maxAge}; SameSite=Strict${secure}`;
+}
+
 type Stored = { token: string; refreshToken?: string; exp?: number };
 type Listener = () => void;
 
@@ -23,11 +65,14 @@ function load(): Stored | null {
   } catch {
     current = null;
   }
+  // A session from before the cookie existed gets one now.
+  if (current && !document.cookie.includes(`${SESSION_COOKIE}=`)) writeCookie(current.token, current.exp);
   return current;
 }
 
 function save(next: Stored | null) {
   current = next;
+  writeCookie(next?.token ?? null, next?.exp);
   try {
     if (next) window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
     else window.localStorage.removeItem(STORAGE_KEY);

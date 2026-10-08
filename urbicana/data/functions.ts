@@ -6,8 +6,10 @@
 // a direct call rejects), which is how a page that is not wired yet shows.
 // MAPPING.md says which page uses which name and what answers it.
 
+import { NotWiredError } from "./errors";
 import { RailsError, rails } from "./rails";
-import { session } from "./session";
+import { searchServices, toPublisherListItem, toSearchResults } from "./search";
+import { currentToken } from "./session";
 
 export type Handler = (args: Record<string, unknown>) => Promise<unknown>;
 
@@ -17,7 +19,7 @@ type RailsMe = {
 };
 
 async function me() {
-  if (!session.isSignedIn()) return null;
+  if (!(await currentToken())) return null;
   try {
     const response = await rails<RailsMe>("/auth/me");
     const user = response.user;
@@ -63,10 +65,35 @@ export const FUNCTIONS: Record<string, Handler> = {
   // return; no link until a read returns it.
   "publishers:getMyProfileHandle": async () => null,
 
+  // Search: "which agents offer this?" (GET /api/v1/registry/skills?ask=).
+  // Signed in only; a visitor's search returns nothing rather than an error.
+  "search:searchSkills": async (args) => {
+    const ask = String(args.query ?? "").trim();
+    if (!ask || !(await currentToken())) return [];
+    const limit = typeof args.limit === "number" ? args.limit : undefined;
+    return toSearchResults(await searchServices(ask, { token: await currentToken() }), limit);
+  },
+  // With a query: the agents whose services match it. Without one it is
+  // the verified-agents list (/official, the home page), not built yet.
+  "publishers:listPublicPage": async (args) => {
+    const ask = String(args.query ?? "").trim();
+    if (!ask) throw new NotWiredError("publishers:listPublicPage", "verified agents");
+    const numItems = Number((args.paginationOpts as { numItems?: number } | undefined)?.numItems ?? 25);
+    const token = await currentToken();
+    const agents = token ? (await searchServices(ask, { token })).agents : [];
+    const page = agents.slice(0, numItems).map(toPublisherListItem);
+    const counts = { all: agents.length, organizations: 0, individuals: agents.length };
+    return { page, isDone: agents.length <= numItems, continueCursor: "", counts, globalCounts: counts };
+  },
+
   // Constants: ClawHub's rollout switches, all off here.
   "rolloutCapabilities:getPublicCapabilities": async () => PUBLIC_CAPABILITIES,
   "appMeta:getDeploymentInfo": async () => ({ appBuildSha: null, deployedAt: null }),
 };
+
+// Functions ClawHub declares as actions but that only read: running one does
+// not refetch every cached query afterwards.
+export const READ_ONLY = new Set(["search:searchSkills"]);
 
 const warned = new Set<string>();
 

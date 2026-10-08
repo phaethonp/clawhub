@@ -4,19 +4,16 @@
 // (after any mutation or action, and when the member signs in or out).
 
 import { getFunctionName } from "convex/server";
-import { handlerFor } from "./functions";
+import { NotWiredError } from "./errors";
+import { handlerFor, READ_ONLY } from "./functions";
 import { session } from "./session";
+
+export { NotWiredError };
 
 export type FunctionRef = Parameters<typeof getFunctionName>[0];
 
 export function nameOf(ref: FunctionRef | string): string {
   return typeof ref === "string" ? ref : getFunctionName(ref);
-}
-
-export class NotWiredError extends Error {
-  constructor(readonly functionName: string) {
-    super(`${functionName} is not available on Urbicana yet.`);
-  }
 }
 
 export async function run(ref: FunctionRef | string, args: Record<string, unknown> = {}) {
@@ -115,9 +112,13 @@ export const queryStore = {
 // A different member sees different data: nothing carries over.
 session.subscribe(() => queryStore.invalidate({ keepPrevious: false }));
 
+// A mutation or action: run it, then refetch what pages show, unless the
+// function only reads (READ_ONLY in functions.ts).
 export async function runAndInvalidate(ref: FunctionRef | string, args: Record<string, unknown> = {}) {
+  const name = nameOf(ref);
+  if (READ_ONLY.has(name)) return await run(name, args);
   try {
-    return await run(ref, args);
+    return await run(name, args);
   } finally {
     queryStore.invalidate();
   }

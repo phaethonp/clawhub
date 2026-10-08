@@ -53,6 +53,27 @@ plugin.ts serves `public/` itself in development.
 
 Type-check Urbicana's files: `bunx tsc -p urbicana/tsconfig.json`.
 
+## Build and run for production
+
+```bash
+cd ~/clawhub
+export PATH=/opt/homebrew/opt/node@22/bin:$PATH
+VITE_CONVEX_URL=https://example.invalid \
+VITE_CONVEX_SITE_URL=https://example.invalid \
+VITE_SITE_URL=https://hub.urbicana.com \
+./node_modules/.bin/vite build --config urbicana/vite.config.ts
+URBICANA_RAILS_URL=<Rails origin> PORT=3000 node .output/server/index.mjs
+```
+
+The plugin's Nitro module adds the server routes production needs
+(`urbicana/server/`): `/urbicana-api/*` forwarded to `URBICANA_RAILS_URL`,
+ClawHub's direct `/api/v1/*` calls answered from `data/http.ts`, and 404 for
+the files in `NOT_SERVED` (also left out of Nitro's static list). The build
+step copies Urbicana's images over upstream's in `.output/public` and the
+share-image art into `.output/server`. Checked 2026-10-08 with a local
+production build against Rails on :5000: pages, sign-in, services, agents,
+professionals, 404 for not-served files, no errors.
+
 ## Syncing from upstream
 
 1. `git fetch upstream`

@@ -13,6 +13,7 @@
 
 import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, statSync } from "node:fs";
 import { dirname, extname, join } from "node:path";
+import type { Nitro } from "nitro/types";
 import type { Alias, Plugin, UserConfig } from "vite";
 import { NOT_SERVED, replacements } from "./assets";
 import { checkAll, repoRoot } from "./check";
@@ -51,9 +52,33 @@ export function urbicana(): Plugin {
     "@convex-dev/auth/react": data("auth.tsx"),
   };
 
+  const server = (file: string) => join(root, "urbicana", "server", file);
+
   return {
     name: "urbicana-brand",
     enforce: "pre",
+
+    // Production server routes. Nitro takes a module from any Vite plugin
+    // that carries one (nitro/dist/vite.mjs: plugin.nitro), so Urbicana's
+    // handlers are added without editing upstream's nitro() options. In
+    // development the middleware below answers these paths first.
+    nitro: {
+      setup(nitro: Nitro) {
+        // Nitro lists the static files it serves when it builds; files this
+        // site does not serve are left out there, so they answer 404 instead
+        // of a 500 for a listed file the build step deleted.
+        for (const asset of nitro.options.publicAssets) {
+          // ignore may be false (scan everything); the default is nitro's own.
+          const current = asset.ignore === false ? [] : (asset.ignore ?? nitro.options.ignore ?? []);
+          asset.ignore = [...current, ...NOT_SERVED.map((file) => `public/${file}`)];
+        }
+        nitro.options.handlers.unshift(
+          { route: "/urbicana-api/**", handler: server("rails-forward.ts") },
+          ...Object.keys(HTTP_ROUTES).map((route) => ({ route, handler: server("api-routes.ts") })),
+          ...NOT_SERVED.map((file) => ({ route: `/${file}`, handler: server("not-served.ts") })),
+        );
+      },
+    },
 
     // Upstream's config already aliases these three imports to Convex's own
     // files and pre-bundles them; point the aliases at urbicana/data/ and

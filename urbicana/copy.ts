@@ -49,6 +49,7 @@ const HOME_LIST = "src/components/HomeListingSection.tsx";
 const HOME_DATA = "src/lib/homeListingData.ts";
 const HOME_ROUTE = "src/routes/index.tsx";
 const WELCOME = "src/components/dashboard/DashboardWelcome.tsx";
+const SKILLS_SH_DETAIL = "src/components/SkillsShCatalogDetail.tsx";
 const HOME_AGENTS = "src/components/HomePopularPublishersSection.tsx";
 const LIST_ROW = "src/components/SkillListingRow.tsx";
 const PUBLISHER_ROW = "src/components/PublisherListItem.tsx";
@@ -117,6 +118,12 @@ export const FILE_RULES: FileRule[] = [
     pattern: /const FOOTER_EASTER_ASCII = \[[\s\S]*?\n\];/g,
     to: 'const FOOTER_EASTER_ASCII = [""];',
   },
+
+  // No GitHub profile pictures (phae, 2026-10-08): ClawHub falls back to
+  // github.com/<handle>.png, which sends Urbicana handles to GitHub; without
+  // an image the component draws its own placeholder.
+  phrase(HOME_AGENTS, "publisher.image ?? `https://github.com/${publisher.handle}.png`", "publisher.image"),
+  phrase(SKILLS_SH_DETAIL, "image: `https://github.com/${githubOwner}.png?size=96`,", "image: undefined,"),
 
   // The home page's agents strip.
   jsxText(HOME_AGENTS, "Official creators", agents),

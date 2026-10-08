@@ -33,6 +33,7 @@
     "copy:useState<ListingKind>(initialListing?.kind ?? \"plugins\")": 1
   },
   "src/components/HomePopularPublishersSection.tsx": {
+    "copy:publisher.image ?? `https://github.com/${publisher.handle}.png`": 1,
     "copy:>Official creators<": 1,
     "copy:Explore skills and plugins from official creators.": 1,
     "copy:Browse official": 1,
@@ -58,6 +59,9 @@
   },
   "src/components/SkillPublishSuccessDialog.tsx": {
     "name": 2
+  },
+  "src/components/SkillsShCatalogDetail.tsx": {
+    "copy:image: `https://github.com/${githubOwner}.png?size=96`,": 1
   },
   "src/components/artifacts/artifactStatus.ts": {
     "name": 2

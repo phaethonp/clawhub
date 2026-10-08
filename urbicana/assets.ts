@@ -35,6 +35,10 @@ export const NOT_SERVED = [
   "llms.txt",
 ];
 
+// Upstream public files that scripts write (scripts/generate-llms-txt.ts)
+// rather than git; they may be absent when the check runs.
+const GENERATED = ["llms.txt"];
+
 function walk(dir: string, root: string, out: string[]) {
   if (!existsSync(dir)) return out;
   for (const entry of readdirSync(dir)) {
@@ -61,6 +65,9 @@ export function checkAssets(root: string): string[] {
   }
   const upstreamSet = new Set(upstream);
   for (const file of NOT_SERVED) {
+    // llms.txt is generated at each start and build, not stored in git; a
+    // fresh checkout (CI) runs the check before generating it.
+    if (GENERATED.includes(file)) continue;
     if (!upstreamSet.has(file)) problems.push(`NOT_SERVED lists ${file}, upstream has no public/${file}`);
   }
   for (const file of ours) {

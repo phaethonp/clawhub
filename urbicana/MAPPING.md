@@ -2,7 +2,8 @@
 
 Measured 2026-10-08 on upstream `c23e34ad` with `bun urbicana/inventory.ts`
 (each route's reachable `api.<module>.<function>` calls). Rails endpoints
-read the same day in `~/app_v2` (`config/routes/api.rb`).
+read the same day in `~/app_v2` (`config/routes/api.rb`). Brought up to date
+at the end of 2026-10-08 with what is built.
 
 ## The concepts
 
@@ -14,7 +15,8 @@ services and products to each other.
 | skill | a **service** an agent offers (one skill on its A2A card) | `agent_skills` (app_v2, committed `27be853d4`): one row per non-supplied card skill, origin `listing` or `typed`, price, delivery, location, agent address |
 | plugin | a **product** an agent sells | **none yet**: app_v2 has no products table (`stripe_products` is billing) |
 | publisher (user or org) | a **member**: a person or business with its agent | user + profile slug + `a2a_agent_cards` + `member_agents` |
-| official publisher | a **verified agent**: the member's claim on their public-record entity is confirmed and the card is publishable | `entity_claims` (claimed) + `a2a_agent_cards` (publishable) + `member_agents` |
+| official publisher | an **agent**: every member whose card is publishable (phae, 2026-10-08). How a claimed or verified agent is marked is phae's open decision; the earlier "verified agents" rule came from a wiki line and was removed | `a2a_agent_cards` (publishable), `claimed` reported as a fact |
+| (none) | a **professional on the record** who has not claimed a profile | Server B `all_entities` via the registry reads, per register (`entity_spine_declarations`) |
 | star | a saved agent or service | none yet |
 | downloads / installs | (no equivalent; hire and contact counts later) | none |
 | GitHub sign-in | Urbicana sign-in | `POST /api/v1/auth/sign_in`, `GET /api/v1/auth/me` (JWT) |
@@ -27,29 +29,29 @@ a visitor until phae approves an anonymous exception in writing.
 
 ### Wired: the front
 
-| Page | ClawHub shows | Urbicana shows | ClawHub calls → Urbicana answer |
-| --- | --- | --- | --- |
-| `/` | hero, featured/trending skills and plugins, popular publishers, apps, "bring your skills" | hero, services from verified agents, verified agents | `skills.listPublicPageV`, `search.searchNativeSkills`, `featuredSkills.listPublic` → **missing: list services without an ask**; `publishers.listPublicPage` → **missing: verified agents**; `packages.listPublicNewPluginsPage` → switched off (products); `rolloutCapabilities.getPublicCapabilities` → constant |
-| `/skills` | the catalogue: search, categories, count, pages | services: search, tags, count, pages | `search.searchSkills` → `GET /api/v1/registry/skills?ask=` (being written, uncommitted); `skills.listPublicPageV`, `skills.countPublicSkills` → **missing: list + count without an ask**; `catalogTopics.listTopByCategory` → **missing: top tags** |
-| `/official` | official organisations, counts | verified agents | `publishers.listPublicPage(official)` → **missing: verified agents** |
-| `/search` | skills and publishers for a query | services and agents for a sentence | `search.searchSkills` → `registry/skills?ask=` (returns agents with their matching skills); `publishers.listPublicPage(q)` → **missing: agents by name** |
-| `/$owner/$slug` (also `/$owner/skills/$slug`) | one skill: readme, files, versions, stats, owner tools | one service: description, price, delivery, location, the agent, a hire/contact action | `skills.getBySlug`, `getReadme`, `getSkillCard` → **missing: one agent_skill by handle + skill id**; `publishers.getByHandle`, `getProfileByHandle` → **missing: member by handle (signed-in)**, `GET discover/agents/:handle` exists but is service-token only; `listRelatedByCategory` → same-tag services; versions, files, GitHub content, evaluations, activity trend, hover stats → switched off; owner tools (rename, merge, delete, restore, summary, catalogue metadata) → the Workshop, below |
-| `/$slug`, `/user/$handle` | publisher profile: published skills, members, stars | the agent's page: the card, its services, the person or business on the record | `publishers.getProfileByHandle` → **missing: member by handle**; `listPublishedPage` → that member's `agent_skills`; `getPublishedDisplayManifest` → switched off; `listMembers` → off (orgs later); `listStarredPage` → off; the public record → `GET /api/v1/server_b/personas/:id` when the claim is confirmed |
+| Page | Urbicana shows | Answered by |
+| --- | --- | --- |
+| `/` | hero; services (tabs All, Trending, Verified, New); agents strip | `featuredSkills:listPublic` (All) and `skills:listPublicPageV4` (New, Verified) → `GET /registry/services`; `publishers:listPublicPage` → `GET /registry/agents`; Trending reports unavailable (switch off); products tab empty |
+| `/skills` | Services: count, list, search | `skills:listPublicPageV4`, `skills:countPublicSkills` → `GET /registry/services`; `search:searchSkills` → `GET /registry/skills?ask=`; categories are ClawHub's static list (no category on services yet) |
+| `/official` | Agents: every agent with a publishable card | `publishers:listPublicPage` → `GET /registry/agents` |
+| `/publishers` | Professionals on the record, per register (urbicana/pages/Professionals.tsx, ClawHub's catalogue screen) | `GET /server_b/registry/directories`, `GET /server_b/registry?source=` |
+| `/search` | services and agents for a sentence | `search:searchSkills`, `publishers:listPublicPage(query)` → `GET /registry/skills?ask=` |
+| `/$owner/$slug` | one service | **not wired**: `GET /registry/services/:handle/:skill_id` exists in Rails; the page's calls (`skills:getBySlug`, readme, card, versions) are not mapped |
+| `/$slug`, `/user/$handle` | the agent's page | **not wired**: needs a signed-in member-by-handle read (card, services, persona when claimed) |
 
 ### Wired: under the account menu (the Workshop)
 
-| Page | Urbicana | Answer |
+| Page | Urbicana | Answered by |
 | --- | --- | --- |
-| `/dashboard` | my card's state (what blocks publishing), my services, my Workshop skills | `GET /api/v1/a2a/card` (+ gaps from `A2aAgentCard`), `GET /api/v1/service_listings`, `GET /api/v1/registry_skills`; downloads, warnings, security review → off |
-| `/skills/publish` | add a service: the listing it is projected from | `POST /api/v1/service_listings` (the card re-projects it into a skill); slug check, changelog, upload → the listing's own fields |
-| `/settings` | account and agent | `GET/PUT /api/v1/auth/me`/`update_profile`, `GET/PUT /api/v1/agent`; GitHub sources, orgs, invites, API tokens, account delete → off for now |
-| `/stars` | saved agents and services | **missing** (no table); off until there is one |
-| owner tools on a service page | edit or remove the listing behind it | `PUT/DELETE /api/v1/service_listings/:id` |
+| `/dashboard` | my agent's services; the welcome screen without any | `publishers:listMine`, `skills:listDashboardPaginated` → `GET /registry/me`; `packages:list` → empty; download metrics not wired |
+| `/skills/publish`, `/plugins/publish`, `/add` | still ClawHub's SKILL.md and plugin publishing | **open**: Urbicana's listing flow is the main app's `/@<user slug>/user/sell-services` (phae to decide how the hub links it) |
+| `/settings` | ClawHub's settings page | not wired |
+| `/stars` | ClawHub's bookmarks | not wired (no table) |
 
 ### Every page: the shell
 
 `__root.tsx` on every page: `users.me`, `users.ensure` → `GET /api/v1/auth/me`;
-`publishers.getMyProfileHandle` → the profile slug from `me`;
+`publishers.getMyProfileHandle` → the profile slug from `GET /registry/me`;
 `search.searchSkills` + `publishers.listPublicPage` (header search) → as
 `/search`; `appMeta.getDeploymentInfo` → constant.
 
@@ -61,38 +63,39 @@ not found for them, on the server and on client-side navigation. `/add`,
 `/skills/publish` and `/plugins/publish` stay until the "Add a service /
 product" flow replaces them.
 
-| Pages | Why |
+| Paths (urbicana/switched-off.ts) | Why |
 | --- | --- |
-| `/plugins`, `/plugins/$name`, `/$owner/plugins/$slug`, `/plugins/publish`, `/plugins/new`, `/publish-plugin` | products: no source yet |
-| `/audits`, every `security-audit` and `security/$scanner` page | ClawHub's scanners; nothing scans services |
+| `/audits`, every `…/security-audit` and `…/security/$scanner` | ClawHub's scanners; nothing scans services |
 | `/skills-sh/...` | mirror of the external skills.sh catalogue |
 | `/import` | GitHub import of SKILL.md files |
 | `/cli/auth`, `/cli/device`, `/auth/docs` | ClawHub CLI and OpenClaw docs sign-in |
 | `/management` | ClawHub staff moderation |
-| `/add` | chooser between publish skill and publish plugin; publish service is the only path |
-| `/$owner/$slug/settings`, `/$owner/skills/$slug/settings` | per-skill settings; the listing is edited in the Workshop |
-| `/$owner/skills/$slug/.well-known/agent-skills/index.json` | install discovery for skills an agent installs; ours are sold, not installed |
+| `/$owner/$slug/settings`, `/$owner/skills/$slug/settings` | per-skill settings |
+| `…/.well-known/agent-skills/…` | install discovery for skills an agent installs; ours are sold |
+| `/plugins/new` | plugin publishing |
 
-Redirect-only routes (`/u`, `/users`, `/publishers`, `/orgs`, `/p`,
-`/packages`, `/upload`, `/publish-skill`, `/admin`) keep redirecting.
+`/plugins` stays: it is the Products page in the menu (empty until there is a
+products source). `/publishers` is the Professionals page; the other
+redirect-only routes (`/u`, `/users`, `/orgs`, `/p`, `/packages`, `/upload`,
+`/publish-skill`, `/admin`) keep redirecting.
 
-## What Rails has to add (app_v2), in order
+## Rails reads the hub uses (app_v2)
 
-1. **Verified agents**: one signed-in read joining claimed `entity_claims`,
-   publishable `a2a_agent_cards` and `member_agents`; page and count.
-   Answers `/official`, the home's agents, the header search's agents.
-2. **A member by handle, signed in**: the published card, its
-   `agent_skills`, and the persona id when the claim is confirmed.
-   `discover/agents/:handle` has the shape but takes a service token.
-   Answers the agent's page and the service page's agent.
-3. **Services without an ask**: `agent_skills` paged and counted, filtered by
-   tag, plus the top tags. `registry/skills` requires `ask`. Answers `/` and
-   `/skills` before anyone types.
-4. **One service**: an `agent_skills` row by handle + skill id. Answers the
-   service page.
+All signed-in (JWT). Built 2026-10-08 on `feat/registry-directory-geography`
+(commits `3bcdac4d`, `11d794f6`, `f92bf765`) except the first two lines.
 
-Search with an ask (`GET /api/v1/registry/skills`) exists and is being
-finished in app_v2.
+| Read | Answers |
+| --- | --- |
+| `GET /auth/me`, `POST /auth/sign_in` | the member, sign-in |
+| `GET /registry/skills?ask=` | services search (another session's work) |
+| `GET /registry/services` (+ `sort`, `verified`, `tag`, `created_after`, cursor) | services listed without a question |
+| `GET /registry/services/:handle/:skill_id` | one service (page not wired yet) |
+| `GET /registry/agents` (+ `q`, cursor) | every agent with a publishable card, with its services and `claimed` |
+| `GET /registry/me` | the member's own agent: handle, card state, services |
+| `GET /server_b/registry/directories`, `GET /server_b/registry?source=` | the professionals directory |
+
+Still missing: a signed-in member-by-handle read for the agent's page
+(`discover/agents/:handle` has the shape but takes a service token).
 
 ## How the fork answers ClawHub's calls (built 2026-10-08)
 
@@ -116,13 +119,18 @@ the console says `[urbicana] not wired yet: <name>`. Wired so far:
 | Function | Answer |
 | --- | --- |
 | `users:me`, `users:ensure` | `GET /auth/me` |
-| `publishers:getMyProfileHandle` | null until a read returns the profile slug |
+| `publishers:getMyProfileHandle`, `publishers:listMine` | `GET /registry/me` |
+| `skills:listDashboardPaginated` | `GET /registry/me` (its services) |
 | `search:searchSkills` | `GET /registry/skills?ask=` → one native skill result per service (`data/search.ts`) |
-| `publishers:listPublicPage` with `query` | the same search's agents, as publishers; without `query` (verified agents) not wired |
+| `publishers:listPublicPage` | with `query`: that search's agents; without: `GET /registry/agents` |
+| `skills:listPublicPageV4`, `skills:countPublicSkills`, `featuredSkills:listPublic` | `GET /registry/services` |
+| `packages:list` | empty (no products) |
 | `rolloutCapabilities:getPublicCapabilities`, `appMeta:getDeploymentInfo` | constants |
 
 ClawHub's pages also `fetch` some public API paths directly. `data/http.ts`
-answers them, before ClawHub's own `/api/**` handler (dev: plugin.ts):
+answers them, before ClawHub's own `/api/**` handler (development: the
+plugin's middleware; production: `urbicana/server/api-routes.ts`, registered
+by the plugin's Nitro module):
 `/api/v1/search` (the services search), `/api/v1/plugins` and
 `/api/v1/plugins/search` (no products: empty), `/api/v1/promotions` (none).
 The member is identified by the `urbicana_token` cookie, which session.ts
@@ -131,12 +139,14 @@ the same cookie (`currentToken()`), so pages rendered there show the
 member's data.
 
 Known gaps:
-- Rails' search returns no `updated_at` per service, so ClawHub's row shows
-  "Updated NaNy ago" (`SkillSearch#skill_json` in app_v2).
 - The agent handle is the profile slug (`pot8os-<uuid>` for phae); a
   service's category shows "Other" (no category on agent_skills); bookmark
   and download counts are 0.
-- The member's portrait is not shown yet (an Active Storage path on Rails'
+- The member's portrait is not shown (an Active Storage path on Rails'
   origin); the header falls back to Gravatar.
-- Production has no forwarding of `/api/v1/*` to `data/http.ts` yet: the
-  dev middleware does it; the deployed server needs a Nitro route.
+- Professionals rows show "@entity-…" and ClawHub's "0 published · 0
+  downloads", and link to a profile page that does not exist for them; "All
+  categories" is the default register; name search covers the default
+  register only (as Rails does).
+- Share images (server/og/) still state ClawHub's facts: downloads, "Audit
+  PASS", an install line (ASSETS.md).

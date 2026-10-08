@@ -66,6 +66,7 @@
     "name": 2
   },
   "src/components/SignInPrompt.tsx": {
+    "copy:<GitHubLogo card />": 1,
     "sign-in": 1
   },
   "src/components/SkillListingRow.tsx": {

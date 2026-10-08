@@ -171,6 +171,9 @@ export const FILE_RULES: FileRule[] = [
   },
   // Sign-in is the member's Urbicana account (data/auth.tsx), not GitHub.
   { file: HEADER, name: "copy:<GitHubLogo sign-in />", pattern: /<GitHubLogo className="github-sign-in-logo"[^>]*\/>/g, to: "" },
+  // The sign-in card (src/components/SignInPrompt.tsx) is ClawHub's, one card
+  // for every signed-in page; only its GitHub mark goes, as in the header.
+  { file: "src/components/SignInPrompt.tsx", name: "copy:<GitHubLogo card />", pattern: /\n\s*<GitHubLogo className="h-4 w-4" \/>/g, to: "" },
 
   // The home page's catalogue tabs and content-type switch. "Featured" has no
   // curation behind it on Urbicana: the tab lists every service, most

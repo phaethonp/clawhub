@@ -137,6 +137,7 @@ export function OnRecordPage() {
   if (!signedIn) {
     return (
       <main className="browse-page browse-page-borderless-header">
+        {/* ClawHub's sign-in card, as on every signed-in page; not restyled per page. */}
         <SignInPrompt title="Sign in to browse who is on record." />
       </main>
     );

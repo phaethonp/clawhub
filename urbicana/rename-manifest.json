@@ -196,6 +196,7 @@
   "src/routes/index.tsx": {
     "copy:<HomeBringSkillsSection />": 1,
     "copy:<HomeAppsSection />": 1,
+    "copy:import { HomeAppsSection } from \"../components/HomeAppsSection\";": 1,
     "home-headline": 1,
     "home-lede": 1
   },

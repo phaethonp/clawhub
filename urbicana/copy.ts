@@ -144,13 +144,18 @@ export const FILE_RULES: FileRule[] = [
     "@media (max-width: 990px) {\n  .navbar-calm .navbar-calm-rail {",
   ),
 
-  // Hidden until there is Urbicana content for them: the home page's grid of
-  // apps ClawHub's skills plug into (src/lib/homeApps.ts), and the footer's
+  // Hidden until there is Urbicana content for them: the footer's
   // scrolling band of ClawHub phrases (empty phrases leave the band blank).
   // [^>]*: in development TanStack's devtools add attributes to the tag.
   // The "Bring your skills to ClawHub" section is about ClawHub's CLI.
   { file: HOME_ROUTE, name: "copy:<HomeBringSkillsSection />", pattern: /\n[ \t]*<HomeBringSkillsSection[^>]*\/>/g, to: "" },
-  { file: HOME_ROUTE, name: "copy:<HomeAppsSection />", pattern: /\n[ \t]*<HomeAppsSection[^>]*\/>/g, to: "" },
+  // In the apps section's place: the cities section (urbicana/pages/CitySection.tsx).
+  { file: HOME_ROUTE, name: "copy:<HomeAppsSection />", pattern: /<HomeAppsSection[^>]*\/>/g, to: "<CitySection />" },
+  phrase(
+    HOME_ROUTE,
+    'import { HomeAppsSection } from "../components/HomeAppsSection";',
+    'import { CitySection } from "../../urbicana/pages/CitySection";',
+  ),
   {
     file: FOOTER,
     name: "copy:FOOTER_EASTER_ASCII",

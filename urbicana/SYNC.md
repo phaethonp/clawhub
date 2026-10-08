@@ -108,6 +108,24 @@ professionals, 404 for not-served files, no errors.
    ClawHub, no lobster art.
 8. Record the merge in this file's log below.
 
+## Design audit
+
+ClawHub's design-audit scripts (`scripts/design-audit/`) fix their scope to
+`src/` and three routes. `urbicana/design-audit/run.ts` runs them over the
+whole fork without editing them: it applies exact replacements to their scope
+lines and runs the result (each replacement must match once; a sync that
+changes those lines stops the runner and names the line).
+
+```bash
+# every line the fork added since it left upstream, in src/ and urbicana/
+bun urbicana/design-audit/run.ts source --output artifacts/design-audit/source.json
+# every page (the route files' own paths; routes with parameters at the first
+# link the pages render), signed in, desktop and mobile, dark and light
+URBICANA_AUDIT_TOKEN=<member session token> bun urbicana/design-audit/run.ts browser \
+  --base-url http://localhost:3010 --output artifacts/design-audit/browser.json \
+  --screenshots artifacts/design-audit/screenshots
+```
+
 ## Log
 
 - 2026-10-08: fork created from upstream `c23e34ad`; brand layer added.

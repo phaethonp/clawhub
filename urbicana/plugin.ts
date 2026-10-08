@@ -11,7 +11,7 @@
 //   urbicana/data/ instead of Convex (functions.ts holds the mapping), and in
 //   development /urbicana-api is forwarded to Rails.
 
-import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, statSync } from "node:fs";
 import { dirname, extname, join } from "node:path";
 import type { Alias, Plugin, UserConfig } from "vite";
 import { NOT_SERVED, replacements } from "./assets";
@@ -26,6 +26,11 @@ const CONTENT_TYPES: Record<string, string> = {
   ".svg": "image/svg+xml",
   ".ico": "image/x-icon",
   ".json": "application/json",
+  ".txt": "text/plain; charset=utf-8",
+  ".xml": "application/xml",
+  ".js": "text/javascript",
+  ".css": "text/css",
+  ".woff2": "font/woff2",
 };
 
 // Where the built site's public files land (Nitro, and Vercel's output).
@@ -144,10 +149,22 @@ export function urbicana(): Plugin {
           res.end("Not found");
           return;
         }
-        if (!ours.has(file)) return next();
+        if (ours.has(file)) {
+          res.setHeader("Content-Type", CONTENT_TYPES[extname(file)] ?? "application/octet-stream");
+          res.setHeader("Cache-Control", "no-cache");
+          res.end(readFileSync(join(root, "urbicana", "public", file)));
+          return;
+        }
+        // Upstream's own public files (robots.txt, app icons, ...). Served here
+        // because, under Node, the dev server's static-file path (srvx 0.11's
+        // Node adapter) passes writeHead a list of header pairs, which Node
+        // rejects, and the process exits with ERR_INVALID_ARG_VALUE. ClawHub
+        // runs its dev server under Bun, which accepts that shape; this fork
+        // runs it under Node (SYNC.md).
+        const upstream = join(root, "public", file);
+        if (!file || file.includes("..") || !existsSync(upstream) || !statSync(upstream).isFile()) return next();
         res.setHeader("Content-Type", CONTENT_TYPES[extname(file)] ?? "application/octet-stream");
-        res.setHeader("Cache-Control", "no-cache");
-        res.end(readFileSync(join(root, "urbicana", "public", file)));
+        res.end(readFileSync(upstream));
       });
     },
 

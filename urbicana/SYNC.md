@@ -35,6 +35,7 @@ must print nothing.
 
 ```bash
 cd ~/clawhub
+export PATH=/opt/homebrew/opt/node@22/bin:$PATH   # ClawHub's .nvmrc: 22
 VITE_CONVEX_URL=https://example.invalid \
 VITE_CONVEX_SITE_URL=https://example.invalid \
 ./node_modules/.bin/vite dev --config urbicana/vite.config.ts --port 3010
@@ -46,7 +47,9 @@ dev server forwards `/urbicana-api/*` to `URBICANA_RAILS_URL` (default
 nothing on purpose: a few upstream pages `fetch` ClawHub's HTTP API directly,
 and those must fail rather than show ClawHub's data. Upstream's own
 `bun run dev` runs the server under Bun, whose first server-side fetch fails
-here; the command above uses Node.
+here; the command above uses Node. Under Node the dev server's static-file
+path (srvx's Node adapter) crashes the process on any `public/` file, so
+plugin.ts serves `public/` itself in development.
 
 Type-check Urbicana's files: `bunx tsc -p urbicana/tsconfig.json`.
 

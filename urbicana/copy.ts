@@ -68,6 +68,7 @@ const PLUGINS_PAGE = "src/routes/plugins/index.tsx";
 const PLUGIN_PAGE = "src/routes/plugins/$name.tsx";
 const PUBLIC_API_URL = "src/lib/publicApiUrl.ts";
 const PLUGIN_ROW = "src/components/PluginListItem.tsx";
+const BROWSE_CONTROLS = "src/components/BrowseControls.tsx";
 
 const { service, services, plugins, plugin, verified, agents } = WORDS;
 
@@ -99,6 +100,24 @@ export const FILE_RULES: FileRule[] = [
     PLUGIN_ROW,
     '\n      <div className="skill-list-item-meta">\n        <span className="skill-list-item-meta-item">\n          <Download size={14} aria-hidden="true" /> {downloads}\n        </span>\n      </div>',
     "",
+  ),
+
+  // ClawHub's searchable category select, also used as On Record's location
+  // picker (pages/OnRecord.tsx): optional labels, ClawHub's own by default,
+  // so every other use reads as before.
+  phrase(
+    BROWSE_CONTROLS,
+    "  responsive?: boolean;\n};\n\nexport function BrowseCategorySelect({\n  categories,\n  value,\n  onChange,\n  responsive = false,\n}: BrowseCategorySelectProps) {",
+    '  responsive?: boolean;\n  labels?: { all: string; search: string; name: string };\n};\n\nexport function BrowseCategorySelect({\n  categories,\n  value,\n  onChange,\n  responsive = false,\n  labels = { all: "All categories", search: "Search categories…", name: "Category" },\n}: BrowseCategorySelectProps) {',
+  ),
+  phrase(BROWSE_CONTROLS, 'aria-label="Category"', "aria-label={labels.name}"),
+  phrase(BROWSE_CONTROLS, '                : "All categories")}', "                : labels.all)}"),
+  phrase(BROWSE_CONTROLS, 'placeholder="Search categories…"', "placeholder={labels.search}"),
+  phrase(BROWSE_CONTROLS, 'aria-label="Search categories"', "aria-label={labels.search}"),
+  phrase(
+    BROWSE_CONTROLS,
+    '<span className="browse-category-option-label">All categories</span>',
+    '<span className="browse-category-option-label">{labels.all}</span>',
   ),
 
   // A plugin's page is a city plugin's page (urbicana/pages/CityPlugin.tsx).

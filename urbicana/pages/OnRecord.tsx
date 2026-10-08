@@ -1,12 +1,10 @@
 // On Record (phae, 2026-10-09): the people and businesses the records name who
 // have not claimed a profile. Location comes first (phae: "first on the
 // hierarchy is the location everything is downstream to that"; "state/city"):
-// places are the registers' own state and city values (stored counts,
-// recounted nightly). The page opens on the state with the most people, the
-// sidebar lists the registers with people there, and the rows are that
-// register's people in that place. How a member picks a state and a city is
-// not built: it waits for a control from the design system's catalogue
-// (phae, 2026-10-09: no invented labels).
+// a state, then one of its cities, from the registers' own values (stored
+// counts, recounted nightly). The page opens on the state with the most people,
+// the sidebar lists the registers with people there, and the rows are that
+// register's people in that place. "All states" lists every register.
 // Professions as filters come with the registers-to-professions mapping.
 //
 // Built only from ClawHub's catalogue screen (src/routes/skills/index.tsx):
@@ -25,7 +23,13 @@
 //     records no city.
 
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
-import { BrowseCategorySelect, BrowseCategorySidebar, BrowseControls, BrowseSearchInput } from "../../src/components/BrowseControls";
+import {
+  BrowseCategorySelect,
+  BrowseCategorySidebar,
+  BrowseControls,
+  BrowseControlsRow,
+  BrowseSearchInput,
+} from "../../src/components/BrowseControls";
 import { PublisherListItem } from "../../src/components/PublisherListItem";
 import { SignInPrompt } from "../../src/components/SignInPrompt";
 import { BrowseResultsSkeleton } from "../../src/components/skeletons/BrowseResultsSkeleton";
@@ -35,6 +39,23 @@ import type { PublicPublisherListItem } from "../../src/lib/publicUser";
 import { SITE_NAME } from "../brand";
 import { rails } from "../data/rails";
 import { session } from "../data/session";
+
+// The registers record a state as its postal code; the picker shows the
+// name (design-audit copy/clarity: a bare code is vague). Codes not listed
+// (provinces, foreign entries) show as recorded.
+const STATE_NAMES: Record<string, string> = {
+  AL: "Alabama", AK: "Alaska", AZ: "Arizona", AR: "Arkansas", CA: "California", CO: "Colorado",
+  CT: "Connecticut", DE: "Delaware", DC: "District of Columbia", FL: "Florida", GA: "Georgia",
+  HI: "Hawaii", ID: "Idaho", IL: "Illinois", IN: "Indiana", IA: "Iowa", KS: "Kansas", KY: "Kentucky",
+  LA: "Louisiana", ME: "Maine", MD: "Maryland", MA: "Massachusetts", MI: "Michigan", MN: "Minnesota",
+  MS: "Mississippi", MO: "Missouri", MT: "Montana", NE: "Nebraska", NV: "Nevada", NH: "New Hampshire",
+  NJ: "New Jersey", NM: "New Mexico", NY: "New York", NC: "North Carolina", ND: "North Dakota",
+  OH: "Ohio", OK: "Oklahoma", OR: "Oregon", PA: "Pennsylvania", RI: "Rhode Island",
+  SC: "South Carolina", SD: "South Dakota", TN: "Tennessee", TX: "Texas", UT: "Utah", VT: "Vermont",
+  VA: "Virginia", WA: "Washington", WV: "West Virginia", WI: "Wisconsin", WY: "Wyoming",
+  PR: "Puerto Rico", GU: "Guam", VI: "U.S. Virgin Islands",
+};
+const stateName = (code: string) => STATE_NAMES[code] ?? code;
 
 const DEFAULT_REGISTER = "all_states_licensed_professionals";
 const PAGE_SIZE = 50;
@@ -54,7 +75,13 @@ type RegistryRow = {
 type RegistryPage = { rows: RegistryRow[]; total?: number | null };
 type Count = { source: string; count: number };
 type StatePlace = { state: string; total: number; sources: Count[] };
+type Place = { city: string; state: string; total: number; sources: Count[] };
 
+// ClawHub's category select with the labels prop copy.ts adds at build time
+// (the type check reads upstream's source, which does not have it yet).
+const LocationSelect = BrowseCategorySelect as unknown as (
+  props: Parameters<typeof BrowseCategorySelect>[0] & { labels: { all: string; search: string; name: string } },
+) => ReturnType<typeof BrowseCategorySelect>;
 
 // A register's table name as words ("nys_real_estate_licenses" -> "NYS real
 // estate licenses"); the discipline names replace these with the mapping.
@@ -88,6 +115,8 @@ export function OnRecordPage() {
   const [directories, setDirectories] = useState<Directory[] | null>(null);
   const [states, setStates] = useState<StatePlace[] | null>(null);
   const [stateCode, setStateCode] = useState<string | undefined>(undefined);
+  const [cities, setCities] = useState<Place[]>([]);
+  const [city, setCity] = useState<string | undefined>(undefined);
   const [register, setRegister] = useState<string | undefined>(undefined);
   const [query, setQuery] = useState("");
   const [submitted, setSubmitted] = useState("");
@@ -102,14 +131,15 @@ export function OnRecordPage() {
   // Location first: a state, then (optionally) one of its cities; the
   // registers listed are the ones with people there, most first.
   const stateEntry = useMemo(() => states?.find((entry) => entry.state === stateCode), [states, stateCode]);
+  const cityEntry = useMemo(() => cities.find((entry) => entry.city === city), [cities, city]);
   const placeSources = useMemo(
-    () => [...stateEntry?.sources ?? []].sort((a, b) => b.count - a.count),
-    [stateEntry],
+    () => [...(cityEntry ?? stateEntry)?.sources ?? []].sort((a, b) => b.count - a.count),
+    [cityEntry, stateEntry],
   );
   const inPlace = Boolean(stateEntry);
   const source = register ?? placeSources[0]?.source ?? DEFAULT_REGISTER;
   // Name search runs on the default register, which records no city.
-  const searchable = source === DEFAULT_REGISTER;
+  const searchable = source === DEFAULT_REGISTER && !cityEntry;
 
   useEffect(() => {
     if (!signedIn) return;
@@ -125,6 +155,29 @@ export function OnRecordPage() {
       .catch(() => setStates([]));
   }, [signedIn]);
 
+  // The chosen state's cities.
+  useEffect(() => {
+    setCities([]);
+    if (!signedIn || !stateCode) return;
+    let cancelled = false;
+    rails<{ locations: Place[] }>("/server_b/registry/locations", { query: { state: stateCode, limit: 5000 } })
+      .then((response) => !cancelled && setCities(response.locations))
+      .catch(() => !cancelled && setCities([]));
+    return () => {
+      cancelled = true;
+    };
+  }, [signedIn, stateCode]);
+
+  const chooseState = (next: string | undefined) => {
+    setStateCode(next);
+    setCity(undefined);
+    setRegister(undefined);
+  };
+  const chooseCity = (next: string | undefined) => {
+    setCity(next);
+    setRegister(undefined);
+  };
+
   const load = useCallback(
     (nextPage: number) => {
       const id = ++request.current;
@@ -134,6 +187,7 @@ export function OnRecordPage() {
         query: {
           source,
           state: stateEntry?.state,
+          city: cityEntry?.city,
           q: searchable ? submitted || undefined : undefined,
           page: nextPage,
           page_size: PAGE_SIZE,
@@ -148,7 +202,7 @@ export function OnRecordPage() {
         .catch(() => id === request.current && setFailed(true))
         .finally(() => id === request.current && setLoading(false));
     },
-    [source, searchable, submitted, stateEntry],
+    [source, searchable, submitted, stateEntry, cityEntry],
   );
 
   useEffect(() => {
@@ -156,6 +210,14 @@ export function OnRecordPage() {
     if (signedIn && states !== null) load(1);
   }, [signedIn, states, load]);
 
+  const stateOptions: BrowseCategory[] = useMemo(
+    () => (states ?? []).map((entry) => ({ slug: entry.state, label: stateName(entry.state), icon: "globe" })),
+    [states],
+  );
+  const cityOptions: BrowseCategory[] = useMemo(
+    () => cities.map((entry) => ({ slug: entry.city, label: entry.city, icon: "globe" })),
+    [cities],
+  );
   // The registers with people in the chosen place; every register otherwise.
   const categories: BrowseCategory[] = useMemo(
     () =>
@@ -206,7 +268,25 @@ export function OnRecordPage() {
             placeholder="Search by name..."
           />
         ) : null}
-        <BrowseCategorySelect categories={categories} value={register ?? (inPlace ? source : undefined)} onChange={setRegister} responsive />
+        {/* Filters beside the collection they affect (carapace
+            application-surfaces), side by side in ClawHub's controls row. */}
+        <BrowseControlsRow>
+          <LocationSelect
+            categories={stateOptions}
+            value={stateCode}
+            onChange={chooseState}
+            labels={{ all: "All states", search: "Search states…", name: "State" }}
+          />
+          {stateCode ? (
+            <LocationSelect
+              categories={cityOptions}
+              value={city}
+              onChange={chooseCity}
+              labels={{ all: "All cities", search: "Search cities…", name: "City" }}
+            />
+          ) : null}
+          <BrowseCategorySelect categories={categories} value={register ?? (inPlace ? source : undefined)} onChange={setRegister} responsive />
+        </BrowseControlsRow>
       </BrowseControls>
       <div className="browse-layout browse-layout-with-sidebar">
         <BrowseCategorySidebar

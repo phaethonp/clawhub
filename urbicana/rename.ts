@@ -17,6 +17,7 @@ import {
   HOME_HEADLINE,
   HOME_LEDE,
   PRODUCT_NAME,
+  SIGN_IN_LABEL,
   SITE_DESCRIPTION,
   SITE_HOST,
   UPSTREAM_DESCRIPTION,
@@ -24,6 +25,7 @@ import {
   UPSTREAM_HOME_LEDE,
   UPSTREAM_HOST,
   UPSTREAM_NAME,
+  UPSTREAM_SIGN_IN_LABEL,
 } from "./brand";
 
 type Rule = { name: string; pattern: RegExp; to: string };
@@ -37,6 +39,7 @@ export const RULES: Rule[] = [
   { name: "description", pattern: new RegExp(escape(UPSTREAM_DESCRIPTION), "g"), to: SITE_DESCRIPTION },
   { name: "home-headline", pattern: new RegExp(escape(UPSTREAM_HOME_HEADLINE), "g"), to: HOME_HEADLINE },
   { name: "home-lede", pattern: new RegExp(escape(UPSTREAM_HOME_LEDE), "g"), to: HOME_LEDE },
+  { name: "sign-in", pattern: new RegExp(escape(UPSTREAM_SIGN_IN_LABEL), "g"), to: SIGN_IN_LABEL },
   { name: "name", pattern: new RegExp(`\\b${escape(UPSTREAM_NAME)}\\b`, "g"), to: PRODUCT_NAME },
   { name: "host", pattern: new RegExp(`\\b${escape(UPSTREAM_HOST)}\\b`, "g"), to: SITE_HOST },
 ];

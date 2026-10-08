@@ -5,11 +5,15 @@
 //   (rename.ts), failing if a file's counts differ from the manifest;
 // - serves urbicana/public/ at upstream's public paths in dev, and copies it
 //   over upstream's in the build output (assets.ts);
-// - runs the brand check when the build or dev server starts (check.ts).
+// - runs the brand check when the build or dev server starts (check.ts);
+// - answers ClawHub's backend calls from Urbicana's Rails: the imports
+//   "convex/react", "convex/browser" and "@convex-dev/auth/react" resolve to
+//   urbicana/data/ instead of Convex (functions.ts holds the mapping), and in
+//   development /urbicana-api is forwarded to Rails.
 
 import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync } from "node:fs";
 import { dirname, extname, join } from "node:path";
-import type { Plugin } from "vite";
+import type { Alias, Plugin, UserConfig } from "vite";
 import { NOT_SERVED, replacements } from "./assets";
 import { checkAll, repoRoot } from "./check";
 import { isRenamedSource, rename } from "./rename";
@@ -30,9 +34,39 @@ export function urbicana(): Plugin {
   const root = repoRoot();
   const ours = new Set(replacements(root));
 
+  const data = (file: string) => join(root, "urbicana", "data", file);
+  const replaced: Record<string, string> = {
+    "convex/react": data("react.tsx"),
+    "convex/browser": data("browser.ts"),
+    "@convex-dev/auth/react": data("auth.tsx"),
+  };
+
   return {
     name: "urbicana-brand",
     enforce: "pre",
+
+    // Upstream's config already aliases these three imports to Convex's own
+    // files and pre-bundles them; point the aliases at urbicana/data/ and
+    // drop them from pre-bundling so the replacement is what loads.
+    config(config: UserConfig) {
+      const resolve = (config.resolve ??= {});
+      const alias = resolve.alias;
+      if (Array.isArray(alias)) {
+        for (const [find, target] of Object.entries(replaced)) {
+          const entry = (alias as Alias[]).find((a) => a.find === find);
+          if (entry) entry.replacement = target;
+          else (alias as Alias[]).unshift({ find, replacement: target });
+        }
+      } else {
+        resolve.alias = { ...(alias as Record<string, string> | undefined), ...replaced };
+      }
+      const include = config.optimizeDeps?.include;
+      if (include) config.optimizeDeps!.include = include.filter((dep) => !(dep in replaced));
+      config.optimizeDeps = {
+        ...config.optimizeDeps,
+        exclude: [...(config.optimizeDeps?.exclude ?? []), ...Object.keys(replaced)],
+      };
+    },
 
     buildStart() {
       const problems = checkAll(root);
@@ -52,6 +86,36 @@ export function urbicana(): Plugin {
     },
 
     configureServer(server) {
+      // Development only: forward /urbicana-api/* to Rails' /api/v1/*. Done
+      // here rather than with server.proxy because TanStack Start's server
+      // middleware answers unknown paths before Vite's proxy sees them.
+      const railsOrigin = (process.env.URBICANA_RAILS_URL ?? "http://localhost:5000").replace(/\/+$/, "");
+      server.middlewares.use(async (req, res, next) => {
+        if (!req.url?.startsWith("/urbicana-api/")) return next();
+        try {
+          const chunks: Buffer[] = [];
+          for await (const chunk of req) chunks.push(chunk as Buffer);
+          const headers: Record<string, string> = {};
+          for (const name of ["accept", "authorization", "content-type"]) {
+            const value = req.headers[name];
+            if (typeof value === "string") headers[name] = value;
+          }
+          const upstream = await fetch(`${railsOrigin}/api/v1${req.url.slice("/urbicana-api".length)}`, {
+            method: req.method,
+            headers,
+            body: chunks.length ? Buffer.concat(chunks) : undefined,
+          });
+          res.statusCode = upstream.status;
+          const type = upstream.headers.get("content-type");
+          if (type) res.setHeader("Content-Type", type);
+          res.end(Buffer.from(await upstream.arrayBuffer()));
+        } catch (error) {
+          res.statusCode = 502;
+          res.setHeader("Content-Type", "application/json");
+          res.end(JSON.stringify({ error: `Rails is not reachable at ${railsOrigin}: ${String(error)}` }));
+        }
+      });
+
       server.middlewares.use((req, res, next) => {
         const file = decodeURIComponent((req.url ?? "").split("?")[0]).replace(/^\//, "");
         if (NOT_SERVED.includes(file)) {

@@ -5,6 +5,9 @@
   "src/components/Footer.tsx": {
     "name": 2
   },
+  "src/components/Header.tsx": {
+    "sign-in": 2
+  },
   "src/components/HomeBringSkillsSection.tsx": {
     "name": 4
   },
@@ -16,6 +19,9 @@
   },
   "src/components/PublisherListItem.tsx": {
     "name": 2
+  },
+  "src/components/SignInPrompt.tsx": {
+    "sign-in": 1
   },
   "src/components/SkillOwnershipPanel.tsx": {
     "name": 1

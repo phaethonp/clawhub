@@ -34,14 +34,20 @@ must print nothing.
 
 ```bash
 cd ~/clawhub
-VITE_CONVEX_URL=https://wry-manatee-359.convex.cloud \
-VITE_CONVEX_SITE_URL=https://wry-manatee-359.convex.site \
+VITE_CONVEX_URL=https://example.invalid \
+VITE_CONVEX_SITE_URL=https://example.invalid \
 ./node_modules/.bin/vite dev --config urbicana/vite.config.ts --port 3010
 ```
 
-The Convex address is ClawHub's public backend, read-only for the pages until
-Urbicana's data is wired. Upstream's own `bun run dev` runs the server under
-Bun, whose first server-side fetch fails here; the command above uses Node.
+Pages read Urbicana's Rails through `urbicana/data/` (see MAPPING.md); the
+dev server forwards `/urbicana-api/*` to `URBICANA_RAILS_URL` (default
+`http://localhost:5000`, app_v2's local Puma). The Convex addresses point at
+nothing on purpose: a few upstream pages `fetch` ClawHub's HTTP API directly,
+and those must fail rather than show ClawHub's data. Upstream's own
+`bun run dev` runs the server under Bun, whose first server-side fetch fails
+here; the command above uses Node.
+
+Type-check Urbicana's files: `bunx tsc -p urbicana/tsconfig.json`.
 
 ## Syncing from upstream
 

@@ -6,7 +6,7 @@ export const SITE_HOST = "hub.urbicana.com";
 export const SITE_URL = `https://${SITE_HOST}`;
 // Upstream prints "<name> — <description>" in share titles, so the
 // description does not repeat the name.
-export const SITE_DESCRIPTION = "The professionals of the city and the agents that work for them.";
+export const SITE_DESCRIPTION = "Services and products, found and sold agent to agent.";
 
 // The home page hero (src/routes/index.tsx). A2A: every person and business
 // has its own agent, and agents find and sell services and products to each

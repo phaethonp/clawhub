@@ -26,14 +26,14 @@ cp "$src/og.svg" "$out/og.svg"
 
 # Upstream's mascot art, replaced by nothing: transparent images keep the
 # layout and show no lobster.
-magick -size 825x854 xc:none "$out/og-clawhub-watermark.png"
+magick -size 825x854 xc:none -define png:exclude-chunks=date,time "$out/og-clawhub-watermark.png"
 magick -size 1672x941 xc:none "$out/home-hero-claw.webp"
 magick -size 1672x941 xc:none "$out/home-hero-claw-light.webp"
 magick -size 1672x941 xc:none "$out/footer-openclaw-easter-egg.webp"
 magick -size 1672x941 xc:none "$out/footer-openclaw-easter-egg-transparent.webp"
-magick -size 1672x941 xc:none "$out/footer-openclaw-easter-egg.png"
-magick -size 1672x941 xc:none "$out/footer-openclaw-easter-egg-transparent.png"
-magick -size 1613x575 xc:none "$out/github-import-hero-art.png"
+magick -size 1672x941 xc:none -define png:exclude-chunks=date,time "$out/footer-openclaw-easter-egg.png"
+magick -size 1672x941 xc:none -define png:exclude-chunks=date,time "$out/footer-openclaw-easter-egg-transparent.png"
+magick -size 1613x575 xc:none -define png:exclude-chunks=date,time "$out/github-import-hero-art.png"
 
 # The not-found picture: the mark on the page colour.
 rsvg-convert -w 256 -h 256 "$src/mark.svg" -o "$tmp/mark256.png"

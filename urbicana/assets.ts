@@ -14,7 +14,6 @@ import { join, relative } from "node:path";
 // shown beside their names, crawler and API files.
 export const NOT_BRAND = [
   /^robots\.txt$/,
-  /^llms\.txt$/, // generated from upstream docs; reworded later, see ASSETS.md
   /^openai-favicon\.svg$/,
   /^slack-favicon\.svg$/,
   /^tanstack-/,
@@ -30,6 +29,10 @@ export const NOT_SERVED = [
   ".well-known/clawdhub.json",
   ".well-known/openclaw-registry.json",
   ".well-known/security.txt", // until Urbicana has a security contact
+  // ClawHub's summary for AI crawlers, generated from its docs at every start
+  // (scripts/generate-llms-txt.ts): it describes ClawHub and links
+  // docs.openclaw.ai. Not served until Urbicana has its own (phae, 2026-10-08).
+  "llms.txt",
 ];
 
 function walk(dir: string, root: string, out: string[]) {

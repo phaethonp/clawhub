@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 2,
+  "carapaceVersion": "v0.6.1",
+  "designSystemVersion": "v0.6.1",
+  "consumerSha": "c7c51176",
+  "scope": "On Record: urbicana/pages/OnRecord.tsx, rendered at /publishers",
+  "summary": {
+    "errors": 0,
+    "warnings": 2,
+    "info": 2
+  },
+  "findings": [
+    {
+      "id": "copy/clarity",
+      "severity": "warning",
+      "kind": "judgment",
+      "file": "urbicana/pages/OnRecord.tsx",
+      "line": 108,
+      "message": "Every row's Activity column reads \"0 published · 0 downloads\": ClawHub's publisher stats, zero-filled for records that publish and download nothing. The column states nothing true about the record.",
+      "remediation": "Show a value the record has (e.g. licence type or status) in the stat slot, or no stat column. Copy/hierarchy change: human review.",
+      "reference": "openclaw-design-audit/references/rubric.md (copy/clarity); openclaw-carapace/references/application-surfaces.md (\"Give master lists identity, status, and one useful comparison value\")"
+    },
+    {
+      "id": "layout/overflow",
+      "severity": "warning",
+      "kind": "mechanical",
+      "file": "urbicana/pages/OnRecord.tsx",
+      "line": 104,
+      "message": "At 375px every record name is cut with an ellipsis (98 clipped text elements; \"JADE LEARNING LLC\" gets 104px) because the row also carries a synthetic handle \"@entity-<id>\" and the zero download stat; the licence and status line is hidden at that width.",
+      "remediation": "Drop the synthetic handle and the zero stat so the name gets the row's width. Changes rendered content: human review.",
+      "reference": "openclaw-design-audit/references/rubric.md (layout/overflow); openclaw-carapace/references/application-surfaces.md (\"Confirm that long labels and descriptions wrap without resizing fixed UI\")"
+    },
+    {
+      "id": "copy/clarity",
+      "severity": "info",
+      "kind": "judgment",
+      "file": "urbicana/pages/OnRecord.tsx",
+      "line": 293,
+      "message": "The registers are listed under ClawHub's fixed sidebar heading \"Categories\" / \"All categories\" (src/components/BrowseControls.tsx:587), so a register reads as a category.",
+      "remediation": "Name the dimension the sidebar lists, on the same pattern used for the state and city selects. Copy change: human review.",
+      "reference": "openclaw-design-audit/references/rubric.md (copy/clarity)"
+    },
+    {
+      "id": "copy/clarity",
+      "severity": "info",
+      "kind": "judgment",
+      "file": "urbicana/pages/OnRecord.tsx",
+      "line": 305,
+      "message": "While loading, the list header reads \"Record / Downloads\" (BrowseResultsSkeleton label and its fixed stat label); once loaded it reads \"Name / Activity\". The header changes words between states.",
+      "remediation": "Pass the loaded header's first label to the skeleton (label=\"Name\"); the skeleton's fixed \"Downloads\" stays until the stat column is decided.",
+      "reference": "openclaw-design-audit/references/rubric.md (copy/clarity)"
+    }
+  ]
+}

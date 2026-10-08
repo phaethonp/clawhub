@@ -136,6 +136,51 @@ export function toSearchResults(search: RailsSkillSearch, limit?: number) {
   return typeof limit === "number" ? rows.slice(0, limit) : rows;
 }
 
+// GET /api/v1/registry/services: services listed without a question.
+type RailsServiceRow = {
+  handle: string;
+  agent: { name?: string | null; url?: string | null; verified?: boolean };
+  service: RailsSkill;
+};
+export type RailsServicesPage = { services: RailsServiceRow[]; next_cursor: string | null; total: number };
+
+function agentOf(row: RailsServiceRow): RailsAgent {
+  return {
+    handle: row.handle,
+    name: row.agent.name,
+    url: row.agent.url,
+    trust: { record_cited: Boolean(row.agent.verified) },
+    skills: [row.service],
+  };
+}
+
+// ClawHub's home and catalogue listing entry ({ skill, ownerHandle, owner }).
+export function toListingEntry(row: RailsServiceRow) {
+  const agent = agentOf(row);
+  return { skill: toNativeSkill(agent, row.service), ownerHandle: row.handle, owner: toPublisher(agent) };
+}
+
+// GET /api/v1/registry/agents/verified.
+type RailsVerifiedAgent = {
+  handle: string | null;
+  name?: string | null;
+  description?: string | null;
+  url?: string | null;
+  services: RailsSkill[];
+};
+export type RailsVerifiedPage = { agents: RailsVerifiedAgent[]; next_cursor: string | null; total: number };
+
+export function toVerifiedListItem(agent: RailsVerifiedAgent) {
+  const item = toPublisherListItem({
+    handle: agent.handle ?? "",
+    name: agent.name,
+    url: agent.url,
+    trust: { record_cited: true },
+    skills: agent.services,
+  });
+  return { ...item, bio: agent.description ?? undefined, official: true };
+}
+
 // ClawHub's PublicPublisherListItem for one agent in a search.
 export function toPublisherListItem(agent: RailsAgent) {
   return {

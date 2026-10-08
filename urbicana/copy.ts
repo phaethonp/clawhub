@@ -46,6 +46,8 @@ const REGISTRY = "src/lib/publicRegistry.ts";
 const HEADER = "src/components/Header.tsx";
 const FOOTER = "src/components/Footer.tsx";
 const HOME_LIST = "src/components/HomeListingSection.tsx";
+const HOME_DATA = "src/lib/homeListingData.ts";
+const HOME_ROUTE = "src/routes/index.tsx";
 const HOME_AGENTS = "src/components/HomePopularPublishersSection.tsx";
 const LIST_ROW = "src/components/SkillListingRow.tsx";
 const PUBLISHER_ROW = "src/components/PublisherListItem.tsx";
@@ -68,7 +70,10 @@ export const FILE_RULES: FileRule[] = [
   phrase(REGISTRY, 'label: "Official"', `label: "${verifiedAgents}"`),
   phrase(REGISTRY, "Browse official organizations publishing on ClawHub.", "Browse the verified agents on ClawHub."),
 
-  // The home page's catalogue tabs and content-type switch.
+  // The home page's catalogue tabs and content-type switch. "Featured" has no
+  // curation behind it on Urbicana: the tab lists every service, most
+  // recently updated first (featuredSkills:listPublic in data/functions.ts).
+  phrase(TABS, 'label: "Featured"', 'label: "All"'),
   phrase(TABS, 'label: "Official"', `label: "${verified}"`),
   jsxText(HOME_LIST, "Plugins", products),
   jsxText(HOME_LIST, "Skills", services),
@@ -78,6 +83,27 @@ export const FILE_RULES: FileRule[] = [
   phrase(HOME_LIST, '"Search skills"', `"Search ${services.toLowerCase()}"`),
   phrase(HOME_LIST, '"Search plugins"', `"Search ${products.toLowerCase()}"`),
   jsxText(LIST_ROW, "Skill", service),
+
+  // The home page opens on services, not products: ClawHub opens on plugins,
+  // which have no source on Urbicana and would always show an empty shelf.
+  phrase(
+    HOME_DATA,
+    'const result = await fetchHomePluginListing("featured", [], HOME_LISTING_PAGE_SIZE);\n  return {\n    kind: "plugins",\n    tab: "featured",\n    categorySlugs: [],\n    fetchLimit: HOME_LISTING_PAGE_SIZE,\n    items: result.items,',
+    'const result = await fetchHomeSkillListing("featured", [], HOME_LISTING_PAGE_SIZE);\n  return {\n    kind: "skills",\n    tab: "featured",\n    categorySlugs: [],\n    fetchLimit: HOME_LISTING_PAGE_SIZE,\n    items: result.page,',
+  ),
+  phrase(HOME_LIST, 'useState<ListingKind>(initialListing?.kind ?? "plugins")', 'useState<ListingKind>(initialListing?.kind ?? "skills")'),
+
+  // Hidden until there is Urbicana content for them: the home page's grid of
+  // apps ClawHub's skills plug into (src/lib/homeApps.ts), and the footer's
+  // scrolling band of ClawHub phrases (empty phrases leave the band blank).
+  // [^>]*: in development TanStack's devtools add attributes to the tag.
+  { file: HOME_ROUTE, name: "copy:<HomeAppsSection />", pattern: /\n[ \t]*<HomeAppsSection[^>]*\/>/g, to: "" },
+  {
+    file: FOOTER,
+    name: "copy:FOOTER_EASTER_ASCII",
+    pattern: /const FOOTER_EASTER_ASCII = \[[\s\S]*?\n\];/g,
+    to: 'const FOOTER_EASTER_ASCII = [""];',
+  },
 
   // The home page's agents strip.
   jsxText(HOME_AGENTS, "Official creators", verifiedAgents),

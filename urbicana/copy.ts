@@ -67,6 +67,7 @@ const AGENTS_PAGE = "src/routes/official/index.tsx";
 const PLUGINS_PAGE = "src/routes/plugins/index.tsx";
 const PLUGIN_PAGE = "src/routes/plugins/$name.tsx";
 const PUBLIC_API_URL = "src/lib/publicApiUrl.ts";
+const PLUGIN_ROW = "src/components/PluginListItem.tsx";
 
 const { service, services, products, product, verified, agents } = WORDS;
 
@@ -84,6 +85,20 @@ export const FILE_RULES: FileRule[] = [
     PUBLIC_API_URL,
     '  const base =\n    resolveAbsoluteBaseUrl(\n      getRuntimeEnv("VITE_CONVEX_SITE_URL"),\n      getRuntimeEnv("VITE_CONVEX_URL"),\n    ) ?? getRequiredRuntimeEnv("VITE_CONVEX_URL");\n  return new URL(normalizedPath, base);',
     '  const base =\n    process.env.URBICANA_SELF_ORIGIN ?? `http://127.0.0.1:${process.env.PORT ?? "3000"}`;\n  return new URL(normalizedPath, base);',
+  ),
+
+  // The catalogue's categories are the live cities (city-plugins.ts), with
+  // ClawHub's sidebar and select; no download counts (nothing is downloaded).
+  phrase(
+    PLUGINS_PAGE,
+    'import { PLUGIN_CATEGORIES, resolvePluginBrowseCategorySlug } from "../../lib/categories";',
+    'import {\n  CITY_CATEGORIES as PLUGIN_CATEGORIES,\n  resolveCityCategory as resolvePluginBrowseCategorySlug,\n} from "../../../urbicana/city-plugins";',
+  ),
+  phrase(PLUGINS_PAGE, '\n                <span className="browse-list-head-label browse-list-head-stat">Downloads</span>', ""),
+  phrase(
+    PLUGIN_ROW,
+    '\n      <div className="skill-list-item-meta">\n        <span className="skill-list-item-meta-item">\n          <Download size={14} aria-hidden="true" /> {downloads}\n        </span>\n      </div>',
+    "",
   ),
 
   // A plugin's page is a city plugin's page (urbicana/pages/CityPlugin.tsx).
@@ -105,7 +120,14 @@ export const FILE_RULES: FileRule[] = [
   phrase(NAV, 'label: "Plugins"', `label: "${products}"`),
   phrase(NAV, 'label: "Official"', `label: "${agents}"`),
   phrase(NAV, 'label: "Publish Skill"', 'label: "Add a service"'),
-  phrase(NAV, 'label: "Publish Plugin"', 'label: "Add a product"'),
+  // Publishing a plugin is ClawHub's (code plugins); Urbicana's plugins are
+  // its own (city-plugins.ts), so the footer offers adding a service only.
+  {
+    file: NAV,
+    name: "copy:footer Publish Plugin",
+    pattern: /\n      \{\n        kind: "link",\n        label: "Publish Plugin",[\s\S]*?\n        \},\n      \},/g,
+    to: "",
+  },
   phrase(REGISTRY, 'label: "Skills"', `label: "${services}"`),
   phrase(REGISTRY, 'label: "Plugins and packages"', `label: "${products}"`),
   phrase(REGISTRY, 'label: "Official"', `label: "${agents}"`),
@@ -261,12 +283,12 @@ export const FILE_RULES: FileRule[] = [
   phrase(HEADER, "Search skills, plugins, and creators", "Search services, products, and agents"),
   phrase(HEADER, "Start typing to search skills, plugins, and creators", "Start typing to search services, products, and agents"),
   phrase(HEADER, "Unable to search skills. Please try again later.", "Unable to search services. Please try again later."),
-  jsxText(HEADER, "Add skill or plugin", "Add a service or product"),
+  jsxText(HEADER, "Add skill or plugin", "Add a service"),
   phrase(HEADER, ': "Skill";', `: "${service}";`),
 
   // The dashboard's welcome screen (a member with no services yet).
   phrase(WELCOME, "Publish your first skill or plugin for others to discover and use.", "Add your first service for other agents to find and hire."),
-  jsxText(WELCOME, "Add skill or plugin", "Add a service or product"),
+  jsxText(WELCOME, "Add skill or plugin", "Add a service"),
   jsxText(WELCOME, "Skills", services),
   jsxText(WELCOME, "Plugins", products),
   jsxText(WELCOME, "Official", agents),
@@ -335,8 +357,7 @@ export const FILE_RULES: FileRule[] = [
   phrase(SEARCH, '"Show all plugins"', '"Show all products"'),
   phrase(SEARCH, '"Show all skills"', '"Show all services"'),
   phrase(SEARCH, '"Browse official organizations"', '"Browse agents"'),
-  phrase(SEARCH, '"Add a skill or plugin"', '"Add a service or product"'),
-  phrase(SEARCH, '"Add a plugin"', '"Add a product"'),
+  phrase(SEARCH, '"Add a skill or plugin"', '"Add a service"'),
 
   // The services page (/skills).
   // [^>]*: in development TanStack's devtools add attributes to the tag

@@ -26,6 +26,17 @@ export const CITIES: City[] = [
   { id: "san-francisco", label: "San Francisco", live: false },
 ];
 
+// The Plugins page's categories: the live cities (ClawHub's BrowseCategory).
+export const CITY_CATEGORIES = CITIES.filter((city) => city.live).map((city) => ({
+  slug: city.id,
+  label: city.label,
+  icon: "globe",
+}));
+
+export function resolveCityCategory(value: string | null | undefined) {
+  return CITY_CATEGORIES.find((category) => category.slug === value)?.slug;
+}
+
 export type Discipline = { id: string; name: string; description?: string; source: string };
 
 export type CityPlugin = {

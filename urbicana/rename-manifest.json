@@ -54,6 +54,9 @@
     "copy:Official creator on ClawHub.": 1,
     "name": 1
   },
+  "src/components/PluginListItem.tsx": {
+    "copy:\n      <div className=\"skill-list-item-meta\">\n        <span className=\"skill-list-item-meta-item\">\n          <Download size={14} aria-hidden=\"true\" /> {downloads}\n        </span>\n      </div>": 1
+  },
   "src/components/PluginVersionsPanel.tsx": {
     "host": 1
   },
@@ -126,7 +129,7 @@
     "copy:label: \"Plugins\"": 2,
     "copy:label: \"Official\"": 2,
     "copy:label: \"Publish Skill\"": 1,
-    "copy:label: \"Publish Plugin\"": 1,
+    "copy:footer Publish Plugin": 1,
     "copy:SECONDARY_NAV_ITEMS": 1,
     "copy:footer Ecosystem and Community": 1,
     "copy:FOOTER_PLATFORM_LINKS": 1,
@@ -217,7 +220,9 @@
   },
   "src/routes/plugins/index.tsx": {
     "copy:<h1 className=\"browse-title\">Plugins</h1>": 1,
-    "copy:<h1 className=\"browse-title\">\n            Plugins\n": 1
+    "copy:<h1 className=\"browse-title\">\n            Plugins\n": 1,
+    "copy:import { PLUGIN_CATEGORIES, resolvePluginBrowseCategorySlug } from \"../../lib/categories\";": 1,
+    "copy:\n                <span className=\"browse-list-head-label browse-list-head-stat\">Downloads</span>": 1
   },
   "src/routes/plugins/publish.tsx": {
     "name": 2
@@ -241,8 +246,7 @@
     "copy:\"Show all plugins\"": 1,
     "copy:\"Show all skills\"": 1,
     "copy:\"Browse official organizations\"": 1,
-    "copy:\"Add a skill or plugin\"": 1,
-    "copy:\"Add a plugin\"": 1
+    "copy:\"Add a skill or plugin\"": 1
   },
   "src/routes/settings.tsx": {
     "name": 3

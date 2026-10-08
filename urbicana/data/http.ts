@@ -3,7 +3,7 @@
 // requests here before ClawHub's own /api/** handler (plugin.ts in dev).
 // The member is identified by the session cookie (session.ts).
 
-import { CITY_PLUGINS, toPluginListItem } from "../city-plugins";
+import { CITY_PLUGINS, cityPluginsIn, toPluginListItem } from "../city-plugins";
 import { searchServices, toSearchResults } from "./search";
 
 export { tokenFromCookie } from "./session";
@@ -28,10 +28,14 @@ export const HTTP_ROUTES: Record<string, Route> = {
     ).map((plugin) => ({ score: 1, package: toPluginListItem(plugin) }));
     return { status: 200, body: { results } };
   },
-  "/api/v1/plugins": async () => ({
-    status: 200,
-    body: { items: CITY_PLUGINS.map(toPluginListItem), nextCursor: null, totalCount: CITY_PLUGINS.length },
-  }),
+  "/api/v1/plugins": async (url) => {
+    const city = url.searchParams.get("category");
+    const plugins = city ? cityPluginsIn(city) : CITY_PLUGINS;
+    return {
+      status: 200,
+      body: { items: plugins.map(toPluginListItem), nextCursor: null, totalCount: plugins.length },
+    };
+  },
 
   // ClawHub's header promotions: none on Urbicana.
   "/api/v1/promotions": async () => ({ status: 200, body: { promotions: [] } }),

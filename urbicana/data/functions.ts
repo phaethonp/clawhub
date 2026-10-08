@@ -109,7 +109,7 @@ export const FUNCTIONS: Record<string, Handler> = {
     );
     return { page, isDone: true, continueCursor: "" };
   },
-  // The dashboard's plugins: products have no source on Urbicana yet.
+  // The dashboard's plugins: Urbicana's plugins are city plugins, not packages.
   "packages:list": async () => [],
 
   // Search: "which agents offer this?" (GET /api/v1/registry/skills?ask=).

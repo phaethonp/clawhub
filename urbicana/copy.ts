@@ -1,5 +1,5 @@
 // The words on ClawHub's pages, renamed to what Urbicana's pages hold
-// (MAPPING.md): a skill is a service an agent offers, a plugin is a product,
+// (MAPPING.md): a skill is a service an agent offers, a plugin is a city plugin,
 // "official" becomes "Agents" for the agents page and "Verified" for the
 // services tab, a creator or publisher is an agent.
 //
@@ -13,9 +13,9 @@ export const WORDS = {
   service: "Service",
   services: "Services",
   // ClawHub's plugins are Urbicana's city plugins (city-plugins.ts) and keep
-  // the name; "Products" was dropped on 2026-10-08.
-  product: "Plugin",
-  products: "Plugins",
+  // the name. Urbicana offers services only (phae, 2026-10-09).
+  plugin: "Plugin",
+  plugins: "Plugins",
   verified: "Verified",
   agents: "Agents",
 } as const;
@@ -69,7 +69,7 @@ const PLUGIN_PAGE = "src/routes/plugins/$name.tsx";
 const PUBLIC_API_URL = "src/lib/publicApiUrl.ts";
 const PLUGIN_ROW = "src/components/PluginListItem.tsx";
 
-const { service, services, products, product, verified, agents } = WORDS;
+const { service, services, plugins, plugin, verified, agents } = WORDS;
 
 export const FILE_RULES: FileRule[] = [
   // The plugins catalogue is "Plug into your city" (city-plugins.ts); its
@@ -123,7 +123,7 @@ export const FILE_RULES: FileRule[] = [
 
   // Navigation (header tabs and footer "Browse" / "Publish").
   phrase(NAV, 'label: "Skills"', `label: "${services}"`),
-  phrase(NAV, 'label: "Plugins"', `label: "${products}"`),
+  phrase(NAV, 'label: "Plugins"', `label: "${plugins}"`),
   phrase(NAV, 'label: "Official"', `label: "${agents}"`),
   phrase(NAV, 'label: "Publish Skill"', 'label: "Add a service"'),
   // "Create org" is ClawHub's publisher organisations, not Urbicana's.
@@ -142,7 +142,7 @@ export const FILE_RULES: FileRule[] = [
     to: "",
   },
   phrase(REGISTRY, 'label: "Skills"', `label: "${services}"`),
-  phrase(REGISTRY, 'label: "Plugins and packages"', `label: "${products}"`),
+  phrase(REGISTRY, 'label: "Plugins and packages"', `label: "${plugins}"`),
   phrase(REGISTRY, 'label: "Official"', `label: "${agents}"`),
   phrase(REGISTRY, "Browse official organizations publishing on ClawHub.", "Browse the agents on ClawHub."),
 
@@ -164,16 +164,16 @@ export const FILE_RULES: FileRule[] = [
   // recently updated first (featuredSkills:listPublic in data/functions.ts).
   phrase(TABS, 'label: "Featured"', 'label: "All"'),
   phrase(TABS, 'label: "Official"', `label: "${verified}"`),
-  jsxText(HOME_LIST, "Plugins", products),
+  jsxText(HOME_LIST, "Plugins", plugins),
   jsxText(HOME_LIST, "Skills", services),
-  jsxText(HOME_LIST, "Plugin", product),
+  jsxText(HOME_LIST, "Plugin", plugin),
   phrase(HOME_LIST, '"Search skills..."', `"Search ${services.toLowerCase()}..."`),
-  phrase(HOME_LIST, '"Search plugins..."', `"Search ${products.toLowerCase()}..."`),
+  phrase(HOME_LIST, '"Search plugins..."', `"Search ${plugins.toLowerCase()}..."`),
   phrase(HOME_LIST, '"Search skills"', `"Search ${services.toLowerCase()}"`),
-  phrase(HOME_LIST, '"Search plugins"', `"Search ${products.toLowerCase()}"`),
+  phrase(HOME_LIST, '"Search plugins"', `"Search ${plugins.toLowerCase()}"`),
   jsxText(LIST_ROW, "Skill", service),
 
-  // The home page opens on services, not products: ClawHub opens on plugins,
+  // The home page opens on services: ClawHub opens on plugins,
   // which have no source on Urbicana and would always show an empty shelf.
   phrase(
     HOME_DATA,
@@ -183,7 +183,7 @@ export const FILE_RULES: FileRule[] = [
   phrase(HOME_LIST, 'useState<ListingKind>(initialListing?.kind ?? "plugins")', 'useState<ListingKind>(initialListing?.kind ?? "skills")'),
 
   // ClawHub hides secondary header items into its "More" menu below 1100px,
-  // sized for its labels; Urbicana's (Services, Products, Agents,
+  // sized for its labels; Urbicana's (Services, Plugins, Agents,
   // Professionals) are ~85px wider, and between 1110px and 1280px the
   // secondary item slid under the centred search box. Same mechanism, wider
   // threshold (1370px, measured with the rule below).
@@ -251,7 +251,7 @@ export const FILE_RULES: FileRule[] = [
   phrase(
     NOT_FOUND,
     "We couldn't find a skill, plugin, or profile at this URL. Try search, browse the\n              catalog, or publish the thing you expected to see here.",
-    "We couldn't find a service, product, agent, or professional at this URL. Try search or\n              browse the catalogue.",
+    "We couldn't find a service, plugin, agent, or professional at this URL. Try search or\n              browse the catalogue.",
   ),
 
   // Share images the server draws (server/og/) look for Urbicana's artwork
@@ -284,7 +284,7 @@ export const FILE_RULES: FileRule[] = [
 
   // The home page's agents strip.
   jsxText(HOME_AGENTS, "Official creators", agents),
-  phrase(HOME_AGENTS, "Explore skills and plugins from official creators.", "Explore the services and products agents offer."),
+  phrase(HOME_AGENTS, "Explore skills and plugins from official creators.", "Explore the services agents offer."),
   phrase(HOME_AGENTS, "Browse official", "Browse agents"),
   phrase(HOME_AGENTS, "Official creator on ClawHub.", "Agent on ClawHub."),
 
@@ -303,7 +303,7 @@ export const FILE_RULES: FileRule[] = [
   phrase(WELCOME, "Publish your first skill or plugin for others to discover and use.", "Add your first service for other agents to find and hire."),
   jsxText(WELCOME, "Add skill or plugin", "Add a service"),
   jsxText(WELCOME, "Skills", services),
-  jsxText(WELCOME, "Plugins", products),
+  jsxText(WELCOME, "Plugins", plugins),
   jsxText(WELCOME, "Official", agents),
   // Its "Docs" link goes to docs.openclaw.ai: removed, like the header's.
   {
@@ -352,15 +352,15 @@ export const FILE_RULES: FileRule[] = [
   },
 
   // Footer description.
-  phrase(FOOTER, "Skills and plugins for OpenClaw agents. Part of the wider OpenClaw ecosystem.", "Services and products, found and sold agent to agent."),
+  phrase(FOOTER, "Skills and plugins for OpenClaw agents. Part of the wider OpenClaw ecosystem.", "Services, found and sold agent to agent."),
 
   // The search page.
   phrase(SEARCH, "Search skills, plugins, and creators...", "Search services, plugins, and agents..."),
   jsxText(SEARCH, "Skills", services),
-  jsxText(SEARCH, "Plugins", products),
+  jsxText(SEARCH, "Plugins", plugins),
   jsxText(SEARCH, "Creators", agents),
   phrase(SEARCH, 'title="Skills"', `title="${services}"`),
-  phrase(SEARCH, 'title="Plugins"', `title="${products}"`),
+  phrase(SEARCH, 'title="Plugins"', `title="${plugins}"`),
   phrase(SEARCH, 'title="Creators"', `title="${agents}"`),
   jsxText(SEARCH, "Unable to search skills", "Unable to search services"),
   jsxText(SEARCH, "Unable to search plugins", "Unable to search plugins"),
@@ -392,7 +392,7 @@ export const FILE_RULES: FileRule[] = [
   // The agents page (/official): every agent with a publishable card.
   phrase(AGENTS_PAGE, "`Official · ${SITE_NAME}`", "`Agents · ${SITE_NAME}`"),
   jsxText(AGENTS_PAGE, "Official", agents),
-  phrase(AGENTS_PAGE, "The organizations behind the top skills and plugins on ClawHub", "The agents behind the services and products on ClawHub"),
+  phrase(AGENTS_PAGE, "The organizations behind the top skills and plugins on ClawHub", "The agents behind the services on ClawHub"),
   phrase(AGENTS_PAGE, '"Search official organizations..."', '"Search agents..."'),
   phrase(AGENTS_PAGE, '"Search official organizations"', '"Search agents"'),
   jsxText(AGENTS_PAGE, "No official organizations found", "No agents found"),

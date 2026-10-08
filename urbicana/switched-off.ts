@@ -4,7 +4,7 @@
 // with ClawHub's own not-found page.
 //
 // Kept for now, though not Urbicana's: /add and /skills/publish,
-// /plugins/publish (the "Add a service / product" links lead there until
+// /plugins/publish (the "Add a service" link leads there until
 // their Urbicana flow exists).
 
 const SWITCHED_OFF: Array<{ pattern: RegExp; why: string }> = [

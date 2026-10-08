@@ -16,7 +16,7 @@ import { join, relative } from "node:path";
 import {
   HOME_HEADLINE,
   HOME_LEDE,
-  PRODUCT_NAME,
+  SITE_NAME,
   SIGN_IN_LABEL,
   SITE_DESCRIPTION,
   SITE_HOST,
@@ -41,7 +41,7 @@ export const RULES: Rule[] = [
   { name: "home-headline", pattern: new RegExp(escape(UPSTREAM_HOME_HEADLINE), "g"), to: HOME_HEADLINE },
   { name: "home-lede", pattern: new RegExp(escape(UPSTREAM_HOME_LEDE), "g"), to: HOME_LEDE },
   { name: "sign-in", pattern: new RegExp(escape(UPSTREAM_SIGN_IN_LABEL), "g"), to: SIGN_IN_LABEL },
-  { name: "name", pattern: new RegExp(`\\b${escape(UPSTREAM_NAME)}\\b`, "g"), to: PRODUCT_NAME },
+  { name: "name", pattern: new RegExp(`\\b${escape(UPSTREAM_NAME)}\\b`, "g"), to: SITE_NAME },
   { name: "host", pattern: new RegExp(`\\b${escape(UPSTREAM_HOST)}\\b`, "g"), to: SITE_HOST },
 ];
 

@@ -6,6 +6,6 @@
     <path d="M20 15 V33 A12 12 0 0 0 44 33 V15" fill="none" stroke="#f6f5f3" stroke-width="9" stroke-linecap="round"/>
   </g>
   <text x="96" y="400" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="88" font-weight="700" fill="#17171a" letter-spacing="-2">Urbicana Registry</text>
-  <text x="96" y="470" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="36" fill="#46464e">Services and products, found and sold agent to agent.</text>
+  <text x="96" y="470" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="36" fill="#46464e">Services, found and sold agent to agent.</text>
   <text x="96" y="560" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="28" fill="#46464e">hub.urbicana.com</text>
 </svg>

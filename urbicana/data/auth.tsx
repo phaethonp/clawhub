@@ -15,7 +15,7 @@ import {
 } from "../../src/components/ui/dialog";
 import { Input } from "../../src/components/ui/input";
 import { Label } from "../../src/components/ui/label";
-import { PRODUCT_NAME } from "../brand";
+import { SITE_NAME } from "../brand";
 import { session } from "./session";
 
 type DialogState = { open: boolean; redirectTo?: string };
@@ -86,7 +86,7 @@ function SignInDialog() {
     <Dialog open={state.open} onOpenChange={(open) => (open ? undefined : close())}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Sign in to {PRODUCT_NAME}</DialogTitle>
+          <DialogTitle>Sign in to {SITE_NAME}</DialogTitle>
           <DialogDescription>Use the email and password of your Urbicana account.</DialogDescription>
         </DialogHeader>
         <form onSubmit={submit} className="grid gap-4">

@@ -8,12 +8,13 @@ at the end of 2026-10-08 with what is built.
 ## The concepts
 
 A2A: every person and business has its own agent; agents find and sell
-services and products to each other.
+services to each other. Urbicana offers services only (phae, 2026-10-09).
+Its plugins are city plugins: "Plug into your city" (`city-plugins.ts`).
 
 | ClawHub | Urbicana | Source of record |
 | --- | --- | --- |
 | skill | a **service** an agent offers (one skill on its A2A card) | `agent_skills` (app_v2, committed `27be853d4`): one row per non-supplied card skill, origin `listing` or `typed`, price, delivery, location, agent address |
-| plugin | a **product** an agent sells | **none yet**: app_v2 has no products table (`stripe_products` is billing) |
+| plugin | a **city plugin**: the people and businesses of a city, by discipline ("Every discipline that builds the city.") | `urbicana/city-plugins.ts`; its disciplines open the people list until the registers→disciplines mapping tool exists |
 | publisher (user or org) | a **member**: a person or business with its agent | user + profile slug + `a2a_agent_cards` + `member_agents` |
 | official publisher | an **agent**: every member whose card is publishable (phae, 2026-10-08). How a claimed or verified agent is marked is phae's open decision; the earlier "verified agents" rule came from a wiki line and was removed | `a2a_agent_cards` (publishable), `claimed` reported as a fact |
 | (none) | a **professional on the record** who has not claimed a profile | Server B `all_entities` via the registry reads, per register (`entity_spine_declarations`) |
@@ -31,7 +32,7 @@ a visitor until phae approves an anonymous exception in writing.
 
 | Page | Urbicana shows | Answered by |
 | --- | --- | --- |
-| `/` | hero; services (tabs All, Trending, Verified, New); agents strip | `featuredSkills:listPublic` (All) and `skills:listPublicPageV4` (New, Verified) → `GET /registry/services`; `publishers:listPublicPage` → `GET /registry/agents`; Trending reports unavailable (switch off); products tab empty |
+| `/` | hero; services (tabs All, Trending, Verified, New); agents strip | `featuredSkills:listPublic` (All) and `skills:listPublicPageV4` (New, Verified) → `GET /registry/services`; `publishers:listPublicPage` → `GET /registry/agents`; Trending reports unavailable (switch off); the Plugins switch lists the city plugins; the "Plug into your city" banner |
 | `/skills` | Services: count, list, search | `skills:listPublicPageV4`, `skills:countPublicSkills` → `GET /registry/services`; `search:searchSkills` → `GET /registry/skills?ask=`; categories are ClawHub's static list (no category on services yet) |
 | `/official` | Agents: every agent with a publishable card | `publishers:listPublicPage` → `GET /registry/agents` |
 | `/publishers` | Professionals on the record, per register (urbicana/pages/Professionals.tsx, ClawHub's catalogue screen) | `GET /server_b/registry/directories`, `GET /server_b/registry?source=` |
@@ -60,8 +61,8 @@ a visitor until phae approves an anonymous exception in writing.
 Built 2026-10-08: `urbicana/switched-off.ts` lists the paths; one check at the
 start of the root route's `beforeLoad` (copy.ts rule on `__root.tsx`) throws
 not found for them, on the server and on client-side navigation. `/add`,
-`/skills/publish` and `/plugins/publish` stay until the "Add a service /
-product" flow replaces them.
+`/skills/publish` and `/plugins/publish` stay until the "Add a service" flow
+replaces them.
 
 | Paths (urbicana/switched-off.ts) | Why |
 | --- | --- |
@@ -74,8 +75,9 @@ product" flow replaces them.
 | `…/.well-known/agent-skills/…` | install discovery for skills an agent installs; ours are sold |
 | `/plugins/new` | plugin publishing |
 
-`/plugins` stays: it is the Products page in the menu (empty until there is a
-products source). `/publishers` is the Professionals page; the other
+`/plugins` is "Plug into your city", the city plugins, with the live cities
+as its categories; `/plugins/<name>` is a city plugin's page. `/publishers`
+is the people list a discipline opens (no menu link); the other
 redirect-only routes (`/u`, `/users`, `/orgs`, `/p`, `/packages`, `/upload`,
 `/publish-skill`, `/admin`) keep redirecting.
 
@@ -124,7 +126,7 @@ the console says `[urbicana] not wired yet: <name>`. Wired so far:
 | `search:searchSkills` | `GET /registry/skills?ask=` → one native skill result per service (`data/search.ts`) |
 | `publishers:listPublicPage` | with `query`: that search's agents; without: `GET /registry/agents` |
 | `skills:listPublicPageV4`, `skills:countPublicSkills`, `featuredSkills:listPublic` | `GET /registry/services` |
-| `packages:list` | empty (no products) |
+| `packages:list` | empty (city plugins are not packages) |
 | `rolloutCapabilities:getPublicCapabilities`, `appMeta:getDeploymentInfo` | constants |
 
 ClawHub's pages also `fetch` some public API paths directly. `data/http.ts`
@@ -132,7 +134,7 @@ answers them, before ClawHub's own `/api/**` handler (development: the
 plugin's middleware; production: `urbicana/server/api-routes.ts`, registered
 by the plugin's Nitro module):
 `/api/v1/search` (the services search), `/api/v1/plugins` and
-`/api/v1/plugins/search` (no products: empty), `/api/v1/promotions` (none).
+`/api/v1/plugins/search` (the city plugins, `?category=` a city), `/api/v1/promotions` (none).
 The member is identified by the `urbicana_token` cookie, which session.ts
 keeps beside the browser's session; route loaders on the fork's server read
 the same cookie (`currentToken()`), so pages rendered there show the

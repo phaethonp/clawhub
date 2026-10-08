@@ -149,6 +149,33 @@ export const FILE_RULES: FileRule[] = [
     to: "",
   },
 
+  // The footer links nowhere outside Urbicana (phae, 2026-10-08: "remove the
+  // openclaw links from the footer"). Browse and Publish stay.
+  {
+    file: FOOTER,
+    name: "copy:footer Explore docs",
+    pattern: /\n[ \t]*<a\s+className="footer-v2-eco-link"[^>]*>\s*Explore docs\s*<ArrowUpRight[^>]*\/>\s*<\/a>/g,
+    to: "",
+  },
+  {
+    file: FOOTER,
+    name: "copy:footer ecosystem strip",
+    pattern: /\n[ \t]*<div className="footer-v2-eco" aria-label="OpenClaw ecosystem"[^>]*>[\s\S]*?(?=\n[ \t]*<div className="footer-v2-bottom")/g,
+    to: "",
+  },
+  {
+    file: NAV,
+    name: "copy:footer Ecosystem and Community",
+    pattern: /\n  \{\n    title: "Ecosystem",[\s\S]*?\n  \},\n  \{\n    title: "Community",[\s\S]*?\n  \},(?=\n\];)/g,
+    to: "",
+  },
+  {
+    file: NAV,
+    name: "copy:FOOTER_PLATFORM_LINKS",
+    pattern: /export const FOOTER_PLATFORM_LINKS = \[[\s\S]*?\] as const;/g,
+    to: "export const FOOTER_PLATFORM_LINKS: ReadonlyArray<{ label: string; href: string }> = [];",
+  },
+
   // Footer description.
   phrase(FOOTER, "Skills and plugins for OpenClaw agents. Part of the wider OpenClaw ecosystem.", "Services and products, found and sold agent to agent."),
 

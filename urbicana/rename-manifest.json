@@ -13,6 +13,14 @@
   "src/components/AppProviders.tsx": {
     "name": 1
   },
+  "src/components/BrowseControls.tsx": {
+    "copy:  responsive?: boolean;\n};\n\nexport function BrowseCategorySelect({\n  categories,\n  value,\n  onChange,\n  responsive = false,\n}: BrowseCategorySelectProps) {": 1,
+    "copy:aria-label=\"Category\"": 2,
+    "copy:                : \"All categories\")}": 1,
+    "copy:placeholder=\"Search categories…\"": 1,
+    "copy:aria-label=\"Search categories\"": 1,
+    "copy:<span className=\"browse-category-option-label\">All categories</span>": 1
+  },
   "src/components/Footer.tsx": {
     "copy:FOOTER_EASTER_ASCII": 1,
     "copy:footer Explore docs": 1,

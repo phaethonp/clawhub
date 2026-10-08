@@ -111,3 +111,10 @@ professionals, 404 for not-served files, no errors.
 ## Log
 
 - 2026-10-08: fork created from upstream `c23e34ad`; brand layer added.
+- 2026-10-08: first sync, upstream `5218bd88` merged as `1cbdce64` with no
+  conflicts. Upstream's two commits (#3925 admin required for the package
+  release scan backfill, #3774 an unauthenticated action could rewrite a
+  catalog plugin's scanStatus) are Convex-only; the hub does not run Convex,
+  so nothing changed for Urbicana. Check, tsc and pages passed; no new
+  workflow. CI's brand check now allows the generated `public/llms.txt` to
+  be absent (`55a6f2f9`).

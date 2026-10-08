@@ -50,6 +50,7 @@ const HOME_DATA = "src/lib/homeListingData.ts";
 const HOME_ROUTE = "src/routes/index.tsx";
 const WELCOME = "src/components/dashboard/DashboardWelcome.tsx";
 const SKILLS_SH_DETAIL = "src/components/SkillsShCatalogDetail.tsx";
+const PUBLISHERS_ROUTE = "src/routes/publishers/index.tsx";
 const HOME_AGENTS = "src/components/HomePopularPublishersSection.tsx";
 const LIST_ROW = "src/components/SkillListingRow.tsx";
 const PUBLISHER_ROW = "src/components/PublisherListItem.tsx";
@@ -124,6 +125,15 @@ export const FILE_RULES: FileRule[] = [
   // an image the component draws its own placeholder.
   phrase(HOME_AGENTS, "publisher.image ?? `https://github.com/${publisher.handle}.png`", "publisher.image"),
   phrase(SKILLS_SH_DETAIL, "image: `https://github.com/${githubOwner}.png?size=96`,", "image: undefined,"),
+
+  // /publishers (upstream: a redirect to /official) is the professionals
+  // directory: the people on the public record, per register
+  // (urbicana/pages/Professionals.tsx, built from ClawHub's catalogue screen).
+  phrase(
+    PUBLISHERS_ROUTE,
+    'export const Route = createFileRoute("/publishers/")({\n  beforeLoad: ({ search }) => {\n    throw redirect({ to: "/official", search, replace: true });\n  },\n});',
+    'import { ProfessionalsPage } from "../../../urbicana/pages/Professionals";\n\nexport const Route = createFileRoute("/publishers/")({\n  component: ProfessionalsPage,\n});',
+  ),
 
   // The home page's agents strip.
   jsxText(HOME_AGENTS, "Official creators", agents),

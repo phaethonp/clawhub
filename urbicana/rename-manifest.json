@@ -192,6 +192,9 @@
   "src/routes/plugins/publish.tsx": {
     "name": 2
   },
+  "src/routes/publishers/index.tsx": {
+    "copy:export const Route = createFileRoute(\"/publishers/\")({\n  beforeLoad: ({ search }) => {\n    throw redirect({ to: \"/official\", search, replace: true });\n  },\n});": 1
+  },
   "src/routes/search.tsx": {
     "copy:Search skills, plugins, and creators...": 1,
     "copy:>Skills<": 1,

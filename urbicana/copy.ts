@@ -109,7 +109,13 @@ export const FILE_RULES: FileRule[] = [
     pattern: /  loader: async \(\{ location, params \}\) => \{\n    const data = await loadPluginDetail\(params\.name\);[\s\S]*?\n    return data;\n  \},\n/g,
     to: "  loader: () => undefined,\n",
   },
-  phrase(PLUGIN_PAGE, "  component: PluginDetailRoute,\n});", "  component: CityPluginRoute,\n});\n\nimport { CityPluginRoute } from \"../../../urbicana/pages/CityPlugin\";"),
+  phrase(PLUGIN_PAGE, "  component: PluginDetailRoute,\n});", "  component: CityPluginRoute,\n});\n\nimport { CityPluginRoute } from \"../../../urbicana/pages/CityPlugin\";\nimport { cityPluginHeadData } from \"../../../urbicana/city-plugins\";"),
+  // Its title and description: the city plugin's, through ClawHub's head.
+  phrase(
+    PLUGIN_PAGE,
+    "head: ({ params, loaderData }) => pluginDetailHead(params.name, loaderData),",
+    "head: ({ params }) => pluginDetailHead(params.name, cityPluginHeadData(params.name) as never),",
+  ),
   // The tiles of ClawHub's home apps section read the home page's tokens;
   // ClawHub maps them onto the shared ones for its dashboard. The same
   // mapping for the plugin page, where a city plugin shows its tiles.
@@ -120,6 +126,13 @@ export const FILE_RULES: FileRule[] = [
   phrase(NAV, 'label: "Plugins"', `label: "${products}"`),
   phrase(NAV, 'label: "Official"', `label: "${agents}"`),
   phrase(NAV, 'label: "Publish Skill"', 'label: "Add a service"'),
+  // "Create org" is ClawHub's publisher organisations, not Urbicana's.
+  {
+    file: NAV,
+    name: "copy:footer Create org",
+    pattern: /\n      \{\n        kind: "link",\n        label: "Create org",\n        to: "\/settings",\n        search: \{ view: "organizations" \},\n      \},/g,
+    to: "",
+  },
   // Publishing a plugin is ClawHub's (code plugins); Urbicana's plugins are
   // its own (city-plugins.ts), so the footer offers adding a service only.
   {
@@ -280,8 +293,8 @@ export const FILE_RULES: FileRule[] = [
   phrase(PUBLISHER_ROW, '"Publisher on ClawHub."', '"Agent on ClawHub."'),
 
   // Header search and account menu.
-  phrase(HEADER, "Search skills, plugins, and creators", "Search services, products, and agents"),
-  phrase(HEADER, "Start typing to search skills, plugins, and creators", "Start typing to search services, products, and agents"),
+  phrase(HEADER, "Search skills, plugins, and creators", "Search services, plugins, and agents"),
+  phrase(HEADER, "Start typing to search skills, plugins, and creators", "Start typing to search services, plugins, and agents"),
   phrase(HEADER, "Unable to search skills. Please try again later.", "Unable to search services. Please try again later."),
   jsxText(HEADER, "Add skill or plugin", "Add a service"),
   phrase(HEADER, ': "Skill";', `: "${service}";`),
@@ -342,7 +355,7 @@ export const FILE_RULES: FileRule[] = [
   phrase(FOOTER, "Skills and plugins for OpenClaw agents. Part of the wider OpenClaw ecosystem.", "Services and products, found and sold agent to agent."),
 
   // The search page.
-  phrase(SEARCH, "Search skills, plugins, and creators...", "Search services, products, and agents..."),
+  phrase(SEARCH, "Search skills, plugins, and creators...", "Search services, plugins, and agents..."),
   jsxText(SEARCH, "Skills", services),
   jsxText(SEARCH, "Plugins", products),
   jsxText(SEARCH, "Creators", agents),
@@ -350,14 +363,20 @@ export const FILE_RULES: FileRule[] = [
   phrase(SEARCH, 'title="Plugins"', `title="${products}"`),
   phrase(SEARCH, 'title="Creators"', `title="${agents}"`),
   jsxText(SEARCH, "Unable to search skills", "Unable to search services"),
-  jsxText(SEARCH, "Unable to search plugins", "Unable to search products"),
+  jsxText(SEARCH, "Unable to search plugins", "Unable to search plugins"),
   phrase(SEARCH, "The skill catalog is temporarily unavailable.", "Services are temporarily unavailable."),
-  phrase(SEARCH, "The plugin catalog is temporarily unavailable.", "Products are temporarily unavailable."),
-  jsxText(SEARCH, "Enter a search term to find skills, plugins, and creators", "Enter a search term to find services, products, and agents"),
-  phrase(SEARCH, '"Show all plugins"', '"Show all products"'),
+  phrase(SEARCH, "The plugin catalog is temporarily unavailable.", "Plugins are temporarily unavailable."),
+  jsxText(SEARCH, "Enter a search term to find skills, plugins, and creators", "Enter a search term to find services, plugins, and agents"),
+  phrase(SEARCH, '"Show all plugins"', '"Show all plugins"'),
   phrase(SEARCH, '"Show all skills"', '"Show all services"'),
   phrase(SEARCH, '"Browse official organizations"', '"Browse agents"'),
-  phrase(SEARCH, '"Add a skill or plugin"', '"Add a service"'),
+  // The empty state's add link: a service only; plugins are Urbicana's own.
+  {
+    file: SEARCH,
+    name: "copy:search add link",
+    pattern: /<a\n {10}className="search-empty-action"\n {10}href=\{`\/add\?kind=\$\{activeType === "plugins" \? "plugin" : "skill"\}`\}\n {8}>\n {10}<Plus size=\{14\} aria-hidden="true" \/>\n {10}\{activeType === "plugins" \? "Add a plugin" : "Add a skill or plugin"\}\n {8}<\/a>/g,
+    to: '{activeType === "plugins" ? null : (\n          <a className="search-empty-action" href="/add?kind=skill">\n            <Plus size={14} aria-hidden="true" />\n            Add a service\n          </a>\n        )}',
+  },
 
   // The services page (/skills).
   // [^>]*: in development TanStack's devtools add attributes to the tag

@@ -129,6 +129,7 @@
     "copy:label: \"Plugins\"": 2,
     "copy:label: \"Official\"": 2,
     "copy:label: \"Publish Skill\"": 1,
+    "copy:footer Create org": 1,
     "copy:footer Publish Plugin": 1,
     "copy:SECONDARY_NAV_ITEMS": 1,
     "copy:footer Ecosystem and Community": 1,
@@ -216,7 +217,8 @@
   },
   "src/routes/plugins/$name.tsx": {
     "copy:plugin page loader": 1,
-    "copy:  component: PluginDetailRoute,\n});": 1
+    "copy:  component: PluginDetailRoute,\n});": 1,
+    "copy:head: ({ params, loaderData }) => pluginDetailHead(params.name, loaderData),": 1
   },
   "src/routes/plugins/index.tsx": {
     "copy:<h1 className=\"browse-title\">Plugins</h1>": 1,
@@ -246,7 +248,7 @@
     "copy:\"Show all plugins\"": 1,
     "copy:\"Show all skills\"": 1,
     "copy:\"Browse official organizations\"": 1,
-    "copy:\"Add a skill or plugin\"": 1
+    "copy:search add link": 1
   },
   "src/routes/settings.tsx": {
     "name": 3

@@ -6,7 +6,6 @@
 // a direct call rejects), which is how a page that is not wired yet shows.
 // MAPPING.md says which page uses which name and what answers it.
 
-import { NotWiredError } from "./errors";
 import { RailsError, rails } from "./rails";
 import { searchServices, toPublisherListItem, toSearchResults } from "./search";
 import { currentToken } from "./session";
@@ -77,7 +76,14 @@ export const FUNCTIONS: Record<string, Handler> = {
   // the verified-agents list (/official, the home page), not built yet.
   "publishers:listPublicPage": async (args) => {
     const ask = String(args.query ?? "").trim();
-    if (!ask) throw new NotWiredError("publishers:listPublicPage", "verified agents");
+    if (!ask) {
+      // Verified agents: the Rails read does not exist yet (MAPPING.md). An
+      // empty page lets /official and the home page render their empty
+      // state; throwing here failed /official's loader with a 500.
+      notWiredYet("publishers:listPublicPage (verified agents)");
+      const none = { all: 0, organizations: 0, individuals: 0 };
+      return { page: [], isDone: true, continueCursor: "", counts: none, globalCounts: none };
+    }
     const numItems = Number((args.paginationOpts as { numItems?: number } | undefined)?.numItems ?? 25);
     const token = await currentToken();
     const agents = token ? (await searchServices(ask, { token })).agents : [];
@@ -97,11 +103,14 @@ export const READ_ONLY = new Set(["search:searchSkills"]);
 
 const warned = new Set<string>();
 
+function notWiredYet(name: string) {
+  if (warned.has(name)) return;
+  warned.add(name);
+  if (typeof console !== "undefined") console.info(`[urbicana] not wired yet: ${name}`);
+}
+
 export function handlerFor(name: string): Handler | null {
   const handler = FUNCTIONS[name];
-  if (!handler && !warned.has(name)) {
-    warned.add(name);
-    if (typeof console !== "undefined") console.info(`[urbicana] not wired yet: ${name}`);
-  }
+  if (!handler) notWiredYet(name);
   return handler ?? null;
 }

@@ -81,7 +81,7 @@ export function urbicana(): Plugin {
     transform(code, id) {
       const path = id.split("?")[0];
       if (!isRenamedSource(path)) return null;
-      const result = rename(code);
+      const result = rename(code, path);
       if (result.code === code) return null;
       return { code: result.code, map: null };
     },

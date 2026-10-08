@@ -27,6 +27,7 @@ import {
   UPSTREAM_NAME,
   UPSTREAM_SIGN_IN_LABEL,
 } from "./brand";
+import { FILE_RULES } from "./copy";
 
 type Rule = { name: string; pattern: RegExp; to: string };
 
@@ -57,14 +58,19 @@ export function isRenamedSource(path: string) {
 
 export type Counts = Record<string, number>;
 
-export function rename(code: string): { code: string; counts: Counts } {
+// path: the file's path (absolute or repo-relative); its page-label rules
+// (copy.ts) run first, on upstream's own words, then the global rules.
+export function rename(code: string, path = ""): { code: string; counts: Counts } {
   const counts: Counts = {};
   let next = code;
-  for (const rule of RULES) {
+  const normalized = path.replace(/\\/g, "/");
+  const fileRules = FILE_RULES.filter((rule) => normalized === rule.file || normalized.endsWith(`/${rule.file}`));
+  for (const rule of [...fileRules, ...RULES]) {
     let hits = 0;
-    next = next.replace(rule.pattern, () => {
+    next = next.replace(rule.pattern, (...match) => {
       hits += 1;
-      return rule.to;
+      // A rule's `to` may refer to its groups ($1, $2).
+      return rule.to.replace(/\$(\d)/g, (_, n) => String(match[Number(n)] ?? ""));
     });
     if (hits) counts[rule.name] = hits;
   }
@@ -85,7 +91,7 @@ export function scan(root: string): Record<string, Counts> {
   const result: Record<string, Counts> = {};
   for (const file of walk(join(root, "src"), []).sort()) {
     if (!isRenamedSource(file)) continue;
-    const { counts } = rename(readFileSync(file, "utf8"));
+    const { counts } = rename(readFileSync(file, "utf8"), relative(root, file));
     if (Object.keys(counts).length) result[relative(root, file)] = counts;
   }
   return result;

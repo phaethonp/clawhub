@@ -11,6 +11,7 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { checkAssets } from "./assets";
+import { FILE_RULES } from "./copy";
 import { scan, type Counts } from "./rename";
 
 const MANIFEST = "urbicana/rename-manifest.json";
@@ -37,8 +38,24 @@ export function checkRenames(root: string): string[] {
   return problems;
 }
 
+// Every page-label rule (copy.ts) must still find its phrase in its file: a
+// rule that matches nothing renames nothing, silently.
+export function checkFileRules(root: string): string[] {
+  const problems: string[] = [];
+  for (const rule of FILE_RULES) {
+    const path = join(root, rule.file);
+    if (!existsSync(path)) {
+      problems.push(`${rule.file}: file gone, label rule ${rule.name} has nothing to rename`);
+      continue;
+    }
+    const hits = readFileSync(path, "utf8").match(new RegExp(rule.pattern.source, "g"))?.length ?? 0;
+    if (hits === 0) problems.push(`${rule.file}: label rule ${rule.name} matches nothing`);
+  }
+  return problems;
+}
+
 export function checkAll(root: string) {
-  return [...checkRenames(root), ...checkAssets(root)];
+  return [...checkRenames(root), ...checkFileRules(root), ...checkAssets(root)];
 }
 
 if (import.meta.main) {

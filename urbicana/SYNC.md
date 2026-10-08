@@ -24,6 +24,7 @@ must print nothing.
 | --- | --- | --- |
 | Name, description, domain | `brand.ts` | the only place they are written |
 | Renames in upstream's source | `rename.ts` | applied while the app is compiled; whole words only, so `getClawHubSiteUrl`, the `clawhub` CLI, packages and `CLAWHUB_*` stay |
+| Page labels | `copy.ts` | per-file exact phrases (Skills → Services, Plugins → Products, Official → Verified, Creators → Agents); each must still match after a sync |
 | Rename counts | `rename-manifest.json` | how many renames each upstream file gets; a change fails the check |
 | Images, icons, manifest | `public/` | served at upstream's own paths, so no reference changes |
 | Files not served | `assets.ts` `NOT_SERVED` | upstream's registry discovery and security contact; 404 in dev, deleted from the build |

@@ -3,25 +3,49 @@
     "name": 1
   },
   "src/components/Footer.tsx": {
+    "copy:Skills and plugins for OpenClaw agents. Part of the wider OpenClaw ecosystem.": 1,
     "name": 2
   },
   "src/components/Header.tsx": {
+    "copy:Search skills, plugins, and creators": 2,
+    "copy:Start typing to search skills, plugins, and creators": 1,
+    "copy:Unable to search skills. Please try again later.": 1,
+    "copy:>Add skill or plugin<": 1,
+    "copy:: \"Skill\";": 1,
     "sign-in": 2
   },
   "src/components/HomeBringSkillsSection.tsx": {
     "name": 4
   },
+  "src/components/HomeListingSection.tsx": {
+    "copy:>Plugins<": 1,
+    "copy:>Skills<": 1,
+    "copy:>Plugin<": 1,
+    "copy:\"Search skills...\"": 1,
+    "copy:\"Search plugins...\"": 1,
+    "copy:\"Search skills\"": 1,
+    "copy:\"Search plugins\"": 1
+  },
   "src/components/HomePopularPublishersSection.tsx": {
+    "copy:>Official creators<": 1,
+    "copy:Explore skills and plugins from official creators.": 1,
+    "copy:Browse official": 1,
+    "copy:Official creator on ClawHub.": 1,
     "name": 1
   },
   "src/components/PluginVersionsPanel.tsx": {
     "host": 1
   },
   "src/components/PublisherListItem.tsx": {
+    "copy:\"Org publisher on ClawHub.\"": 1,
+    "copy:\"Publisher on ClawHub.\"": 1,
     "name": 2
   },
   "src/components/SignInPrompt.tsx": {
     "sign-in": 1
+  },
+  "src/components/SkillListingRow.tsx": {
+    "copy:>Skill<": 1
   },
   "src/components/SkillOwnershipPanel.tsx": {
     "name": 1
@@ -47,6 +71,9 @@
   "src/lib/authErrorMessage.ts": {
     "name": 2
   },
+  "src/lib/catalogTabs.ts": {
+    "copy:label: \"Official\"": 1
+  },
   "src/lib/convexError.ts": {
     "name": 2
   },
@@ -61,6 +88,11 @@
     "host": 1
   },
   "src/lib/nav-items.ts": {
+    "copy:label: \"Skills\"": 2,
+    "copy:label: \"Plugins\"": 2,
+    "copy:label: \"Official\"": 2,
+    "copy:label: \"Publish Skill\"": 1,
+    "copy:label: \"Publish Plugin\"": 1,
     "name": 1
   },
   "src/lib/og.ts": {
@@ -70,6 +102,10 @@
     "name": 2
   },
   "src/lib/publicRegistry.ts": {
+    "copy:label: \"Skills\"": 1,
+    "copy:label: \"Plugins and packages\"": 1,
+    "copy:label: \"Official\"": 1,
+    "copy:Browse official organizations publishing on ClawHub.": 1,
     "name": 2,
     "host": 1
   },
@@ -120,16 +156,52 @@
     "home-lede": 1
   },
   "src/routes/official/index.tsx": {
+    "copy:`Official · ${SITE_NAME}`": 1,
+    "copy:>Official<": 1,
+    "copy:The organizations behind the top skills and plugins on ClawHub": 2,
+    "copy:\"Search official organizations...\"": 1,
+    "copy:\"Search official organizations\"": 1,
+    "copy:>No official organizations found<": 1,
     "name": 2
   },
   "src/routes/plugins/publish.tsx": {
     "name": 2
+  },
+  "src/routes/search.tsx": {
+    "copy:Search skills, plugins, and creators...": 1,
+    "copy:>Skills<": 1,
+    "copy:>Plugins<": 1,
+    "copy:>Creators<": 1,
+    "copy:title=\"Skills\"": 1,
+    "copy:title=\"Plugins\"": 1,
+    "copy:title=\"Creators\"": 1,
+    "copy:>Unable to search skills<": 1,
+    "copy:>Unable to search plugins<": 1,
+    "copy:The skill catalog is temporarily unavailable.": 1,
+    "copy:The plugin catalog is temporarily unavailable.": 1,
+    "copy:>Enter a search term to find skills, plugins, and creators<": 1,
+    "copy:\"Show all plugins\"": 1,
+    "copy:\"Show all skills\"": 1,
+    "copy:\"Browse official organizations\"": 1,
+    "copy:\"Add a skill or plugin\"": 1,
+    "copy:\"Add a plugin\"": 1
   },
   "src/routes/settings.tsx": {
     "name": 3
   },
   "src/routes/skills-sh/$owner/$repo/$slug.tsx": {
     "name": 1
+  },
+  "src/routes/skills/-SkillsResults.tsx": {
+    "copy:>Skills couldn't be loaded<": 1,
+    "copy:>No skills found<": 1,
+    "copy:>Skill<": 1
+  },
+  "src/routes/skills/index.tsx": {
+    "copy:h1 Skills": 1,
+    "copy:\"Search skills...\"": 1,
+    "copy:\"Skill categories\"": 1,
+    "copy:>Unable to search skills. Refresh to retry.<": 1
   },
   "src/routes/skills/publish.tsx": {
     "name": 4

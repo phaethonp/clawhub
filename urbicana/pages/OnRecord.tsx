@@ -1,5 +1,5 @@
-// The professionals on the public record who have not claimed a profile:
-// the Registry's people, listed per register (the directories Server B's
+// On Record (phae, 2026-10-09): the people and businesses the city's records
+// name who have not claimed a profile, listed per register (the directories Server B's
 // entity_spine_declarations records). The grouping into disciplines (phae,
 // 2026-10-08: "first create the screen using the registers then we will
 // create a mapping") comes later; for now each register is one category.
@@ -71,7 +71,7 @@ function toPublisher(row: RegistryRow): PublicPublisherListItem {
   } as unknown as PublicPublisherListItem;
 }
 
-export function ProfessionalsPage() {
+export function OnRecordPage() {
   const signedIn = useSyncExternalStore(session.subscribe, session.isSignedIn, () => false);
   const [directories, setDirectories] = useState<Directory[] | null>(null);
   const [register, setRegister] = useState<string | undefined>(undefined);
@@ -137,7 +137,7 @@ export function ProfessionalsPage() {
   if (!signedIn) {
     return (
       <main className="browse-page browse-page-borderless-header">
-        <SignInPrompt title="Sign in to browse the professionals on the record." />
+        <SignInPrompt title="Sign in to browse who is on record." />
       </main>
     );
   }
@@ -149,7 +149,7 @@ export function ProfessionalsPage() {
       <div className="browse-page-header">
         <div className="browse-page-header-main">
           <h1 className="browse-title">
-            Professionals
+            On Record
             {total !== null ? (
               <>
                 {" "}
@@ -169,8 +169,8 @@ export function ProfessionalsPage() {
           }}
           onSubmit={() => setSubmitted(query.trim())}
           inputRef={searchInputRef}
-          label="Search professionals by name"
-          placeholder={searchable ? "Search professionals by name..." : "Search covers the default register only"}
+          label="Search by name"
+          placeholder={searchable ? "Search by name..." : "Search covers the default register only"}
           disabled={!searchable}
         />
         <BrowseCategorySelect categories={categories} value={register} onChange={setRegister} responsive />
@@ -180,20 +180,20 @@ export function ProfessionalsPage() {
         <div className="browse-results">
           {failed ? (
             <div role="alert" className="empty-state">
-              <p className="empty-state-title">Professionals couldn't be loaded</p>
+              <p className="empty-state-title">The records couldn't be loaded</p>
               <p className="empty-state-body">Try again in a moment.</p>
             </div>
           ) : rows.length === 0 && loading ? (
-            <BrowseResultsSkeleton label="Professional" showIcon variant="list" />
+            <BrowseResultsSkeleton label="Record" showIcon variant="list" />
           ) : rows.length === 0 ? (
             <div className="empty-state">
-              <p className="empty-state-title">No professionals found</p>
+              <p className="empty-state-title">No one found</p>
             </div>
           ) : (
             // The publisher list as src/routes/official/index.tsx draws it.
             <div className="browse-list-stack">
               <div className="browse-list-head browse-list-head-publishers" aria-hidden="true">
-                <span className="browse-list-head-label">Professional</span>
+                <span className="browse-list-head-label">Name</span>
                 <span className="browse-list-head-label browse-list-head-stat">Activity</span>
               </div>
               <div className="publisher-directory-list">

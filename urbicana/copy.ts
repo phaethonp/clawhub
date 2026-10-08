@@ -123,7 +123,20 @@ export const FILE_RULES: FileRule[] = [
 
   // Navigation (header tabs and footer "Browse" / "Publish").
   phrase(NAV, 'label: "Skills"', `label: "${services}"`),
-  phrase(NAV, 'label: "Plugins"', `label: "${plugins}"`),
+  // Menu: Services · Agents · On Record (phae, 2026-10-09). Plugins leave the
+  // menu: they are filters on the professions inside On Record. Placed before
+  // the "Official" rule, which then renames that label to Agents.
+  {
+    file: NAV,
+    name: "copy:primary nav On Record",
+    pattern: /  \{\n    label: "Plugins",\n    to: PublicRegistryPaths\.plugins,\n    activePathPrefixes: \["\/plugin\/"\],\n  \},\n  \{\n    label: "Official",\n    to: PublicRegistryPaths\.official,\n  \},/g,
+    to: '  {\n    label: "Official",\n    to: PublicRegistryPaths.official,\n  },\n  {\n    label: "On Record",\n    to: "/publishers",\n  },',
+  },
+  phrase(
+    NAV,
+    '      { kind: "link", label: "Plugins", to: PublicRegistryPaths.plugins },\n      { kind: "link", label: "Official", to: PublicRegistryPaths.official },',
+    '      { kind: "link", label: "Official", to: PublicRegistryPaths.official },\n      { kind: "link", label: "On Record", to: "/publishers" },',
+  ),
   phrase(NAV, 'label: "Official"', `label: "${agents}"`),
   phrase(NAV, 'label: "Publish Skill"', 'label: "Add a service"'),
   // "Create org" is ClawHub's publisher organisations, not Urbicana's.
@@ -251,7 +264,7 @@ export const FILE_RULES: FileRule[] = [
   phrase(
     NOT_FOUND,
     "We couldn't find a skill, plugin, or profile at this URL. Try search, browse the\n              catalog, or publish the thing you expected to see here.",
-    "We couldn't find a service, plugin, agent, or professional at this URL. Try search or\n              browse the catalogue.",
+    "We couldn't find a service, plugin, agent, or record at this URL. Try search or\n              browse the catalogue.",
   ),
 
   // Share images the server draws (server/og/) look for Urbicana's artwork
@@ -275,11 +288,11 @@ export const FILE_RULES: FileRule[] = [
 
   // /publishers (upstream: a redirect to /official) is the professionals
   // directory: the people on the public record, per register
-  // (urbicana/pages/Professionals.tsx, built from ClawHub's catalogue screen).
+  // (urbicana/pages/OnRecord.tsx, built from ClawHub's catalogue screen).
   phrase(
     PUBLISHERS_ROUTE,
     'export const Route = createFileRoute("/publishers/")({\n  beforeLoad: ({ search }) => {\n    throw redirect({ to: "/official", search, replace: true });\n  },\n});',
-    'import { ProfessionalsPage } from "../../../urbicana/pages/Professionals";\n\nexport const Route = createFileRoute("/publishers/")({\n  component: ProfessionalsPage,\n});',
+    'import { OnRecordPage } from "../../../urbicana/pages/OnRecord";\n\nexport const Route = createFileRoute("/publishers/")({\n  component: OnRecordPage,\n});',
   ),
 
   // The home page's agents strip.

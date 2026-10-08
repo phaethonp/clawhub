@@ -126,7 +126,8 @@
   },
   "src/lib/nav-items.ts": {
     "copy:label: \"Skills\"": 2,
-    "copy:label: \"Plugins\"": 2,
+    "copy:primary nav On Record": 1,
+    "copy:      { kind: \"link\", label: \"Plugins\", to: PublicRegistryPaths.plugins },\n      { kind: \"link\", label: \"Official\", to: PublicRegistryPaths.official },": 1,
     "copy:label: \"Official\"": 2,
     "copy:label: \"Publish Skill\"": 1,
     "copy:footer Create org": 1,

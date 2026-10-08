@@ -14,10 +14,14 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 import {
+  HOME_HEADLINE,
+  HOME_LEDE,
   PRODUCT_NAME,
   SITE_DESCRIPTION,
   SITE_HOST,
   UPSTREAM_DESCRIPTION,
+  UPSTREAM_HOME_HEADLINE,
+  UPSTREAM_HOME_LEDE,
   UPSTREAM_HOST,
   UPSTREAM_NAME,
 } from "./brand";
@@ -31,6 +35,8 @@ function escape(value: string) {
 // Order matters: the description contains the name, so it goes first.
 export const RULES: Rule[] = [
   { name: "description", pattern: new RegExp(escape(UPSTREAM_DESCRIPTION), "g"), to: SITE_DESCRIPTION },
+  { name: "home-headline", pattern: new RegExp(escape(UPSTREAM_HOME_HEADLINE), "g"), to: HOME_HEADLINE },
+  { name: "home-lede", pattern: new RegExp(escape(UPSTREAM_HOME_LEDE), "g"), to: HOME_LEDE },
   { name: "name", pattern: new RegExp(`\\b${escape(UPSTREAM_NAME)}\\b`, "g"), to: PRODUCT_NAME },
   { name: "host", pattern: new RegExp(`\\b${escape(UPSTREAM_HOST)}\\b`, "g"), to: SITE_HOST },
 ];

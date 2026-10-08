@@ -109,6 +109,10 @@
     "name": 5,
     "host": 1
   },
+  "src/routes/index.tsx": {
+    "home-headline": 1,
+    "home-lede": 1
+  },
   "src/routes/official/index.tsx": {
     "name": 2
   },

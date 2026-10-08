@@ -1,6 +1,7 @@
 // The words on ClawHub's pages, renamed to what Urbicana's pages hold
 // (MAPPING.md): a skill is a service an agent offers, a plugin is a product,
-// "official" is a verified agent, a creator or publisher is an agent.
+// "official" becomes "Agents" for the agents page and "Verified" for the
+// services tab, a creator or publisher is an agent.
 //
 // Each rule names the one upstream file it applies to and the exact phrase,
 // so code that uses the same words (routes like /skills, api.skills.*,
@@ -14,7 +15,6 @@ export const WORDS = {
   product: "Product",
   products: "Products",
   verified: "Verified",
-  verifiedAgents: "Verified agents",
   agents: "Agents",
 } as const;
 
@@ -48,27 +48,40 @@ const FOOTER = "src/components/Footer.tsx";
 const HOME_LIST = "src/components/HomeListingSection.tsx";
 const HOME_DATA = "src/lib/homeListingData.ts";
 const HOME_ROUTE = "src/routes/index.tsx";
+const WELCOME = "src/components/dashboard/DashboardWelcome.tsx";
 const HOME_AGENTS = "src/components/HomePopularPublishersSection.tsx";
 const LIST_ROW = "src/components/SkillListingRow.tsx";
 const PUBLISHER_ROW = "src/components/PublisherListItem.tsx";
 const SEARCH = "src/routes/search.tsx";
 const SERVICES = "src/routes/skills/index.tsx";
 const SERVICES_RESULTS = "src/routes/skills/-SkillsResults.tsx";
-const VERIFIED = "src/routes/official/index.tsx";
+const AGENTS_PAGE = "src/routes/official/index.tsx";
 
-const { service, services, products, product, verified, verifiedAgents, agents } = WORDS;
+const { service, services, products, product, verified, agents } = WORDS;
 
 export const FILE_RULES: FileRule[] = [
   // Navigation (header tabs and footer "Browse" / "Publish").
   phrase(NAV, 'label: "Skills"', `label: "${services}"`),
   phrase(NAV, 'label: "Plugins"', `label: "${products}"`),
-  phrase(NAV, 'label: "Official"', `label: "${verified}"`),
+  phrase(NAV, 'label: "Official"', `label: "${agents}"`),
   phrase(NAV, 'label: "Publish Skill"', 'label: "Add a service"'),
   phrase(NAV, 'label: "Publish Plugin"', 'label: "Add a product"'),
   phrase(REGISTRY, 'label: "Skills"', `label: "${services}"`),
   phrase(REGISTRY, 'label: "Plugins and packages"', `label: "${products}"`),
-  phrase(REGISTRY, 'label: "Official"', `label: "${verifiedAgents}"`),
-  phrase(REGISTRY, "Browse official organizations publishing on ClawHub.", "Browse the verified agents on ClawHub."),
+  phrase(REGISTRY, 'label: "Official"', `label: "${agents}"`),
+  phrase(REGISTRY, "Browse official organizations publishing on ClawHub.", "Browse the agents on ClawHub."),
+
+  // The header links nowhere outside Urbicana: ClawHub's only secondary item
+  // is "Docs" -> docs.openclaw.ai/clawhub, drawn in the desktop rail, the
+  // "More" menu and the mobile sheet (Header.tsx handles an empty list).
+  {
+    file: NAV,
+    name: "copy:SECONDARY_NAV_ITEMS",
+    pattern: /export const SECONDARY_NAV_ITEMS: NavItem\[\] = \[[\s\S]*?\n\];/g,
+    to: "export const SECONDARY_NAV_ITEMS: NavItem[] = [];",
+  },
+  // Sign-in is the member's Urbicana account (data/auth.tsx), not GitHub.
+  { file: HEADER, name: "copy:<GitHubLogo sign-in />", pattern: /<GitHubLogo className="github-sign-in-logo"[^>]*\/>/g, to: "" },
 
   // The home page's catalogue tabs and content-type switch. "Featured" has no
   // curation behind it on Urbicana: the tab lists every service, most
@@ -106,12 +119,12 @@ export const FILE_RULES: FileRule[] = [
   },
 
   // The home page's agents strip.
-  jsxText(HOME_AGENTS, "Official creators", verifiedAgents),
-  phrase(HOME_AGENTS, "Explore skills and plugins from official creators.", "Explore services and products from verified agents."),
-  phrase(HOME_AGENTS, "Browse official", "Browse verified agents"),
-  phrase(HOME_AGENTS, "Official creator on ClawHub.", "Verified agent on ClawHub."),
+  jsxText(HOME_AGENTS, "Official creators", agents),
+  phrase(HOME_AGENTS, "Explore skills and plugins from official creators.", "Explore the services and products agents offer."),
+  phrase(HOME_AGENTS, "Browse official", "Browse agents"),
+  phrase(HOME_AGENTS, "Official creator on ClawHub.", "Agent on ClawHub."),
 
-  // Agent rows (search results, the verified list).
+  // Agent rows (search results, the agents page).
   phrase(PUBLISHER_ROW, '"Org publisher on ClawHub."', '"Business agent on ClawHub."'),
   phrase(PUBLISHER_ROW, '"Publisher on ClawHub."', '"Agent on ClawHub."'),
 
@@ -121,6 +134,20 @@ export const FILE_RULES: FileRule[] = [
   phrase(HEADER, "Unable to search skills. Please try again later.", "Unable to search services. Please try again later."),
   jsxText(HEADER, "Add skill or plugin", "Add a service or product"),
   phrase(HEADER, ': "Skill";', `: "${service}";`),
+
+  // The dashboard's welcome screen (a member with no services yet).
+  phrase(WELCOME, "Publish your first skill or plugin for others to discover and use.", "Add your first service for other agents to find and hire."),
+  jsxText(WELCOME, "Add skill or plugin", "Add a service or product"),
+  jsxText(WELCOME, "Skills", services),
+  jsxText(WELCOME, "Plugins", products),
+  jsxText(WELCOME, "Official", agents),
+  // Its "Docs" link goes to docs.openclaw.ai: removed, like the header's.
+  {
+    file: WELCOME,
+    name: "copy:welcome Docs link",
+    pattern: /\n[ \t]*<a href=\{CLAWHUB_DOCS_URL\}[^>]*>\s*Docs\s*<ArrowUpRight[^>]*\/>\s*<\/a>/g,
+    to: "",
+  },
 
   // Footer description.
   phrase(FOOTER, "Skills and plugins for OpenClaw agents. Part of the wider OpenClaw ecosystem.", "Services and products, found and sold agent to agent."),
@@ -140,7 +167,7 @@ export const FILE_RULES: FileRule[] = [
   jsxText(SEARCH, "Enter a search term to find skills, plugins, and creators", "Enter a search term to find services, products, and agents"),
   phrase(SEARCH, '"Show all plugins"', '"Show all products"'),
   phrase(SEARCH, '"Show all skills"', '"Show all services"'),
-  phrase(SEARCH, '"Browse official organizations"', '"Browse verified agents"'),
+  phrase(SEARCH, '"Browse official organizations"', '"Browse agents"'),
   phrase(SEARCH, '"Add a skill or plugin"', '"Add a service or product"'),
   phrase(SEARCH, '"Add a plugin"', '"Add a product"'),
 
@@ -155,11 +182,11 @@ export const FILE_RULES: FileRule[] = [
   jsxText(SERVICES_RESULTS, "No skills found", "No services found"),
   jsxText(SERVICES_RESULTS, "Skill", service),
 
-  // The verified agents page (/official).
-  phrase(VERIFIED, "`Official · ${SITE_NAME}`", "`Verified agents · ${SITE_NAME}`"),
-  jsxText(VERIFIED, "Official", verifiedAgents),
-  phrase(VERIFIED, "The organizations behind the top skills and plugins on ClawHub", "The agents behind the services and products on ClawHub"),
-  phrase(VERIFIED, '"Search official organizations..."', '"Search verified agents..."'),
-  phrase(VERIFIED, '"Search official organizations"', '"Search verified agents"'),
-  jsxText(VERIFIED, "No official organizations found", "No verified agents found"),
+  // The agents page (/official): every agent with a publishable card.
+  phrase(AGENTS_PAGE, "`Official · ${SITE_NAME}`", "`Agents · ${SITE_NAME}`"),
+  jsxText(AGENTS_PAGE, "Official", agents),
+  phrase(AGENTS_PAGE, "The organizations behind the top skills and plugins on ClawHub", "The agents behind the services and products on ClawHub"),
+  phrase(AGENTS_PAGE, '"Search official organizations..."', '"Search agents..."'),
+  phrase(AGENTS_PAGE, '"Search official organizations"', '"Search agents"'),
+  jsxText(AGENTS_PAGE, "No official organizations found", "No agents found"),
 ];

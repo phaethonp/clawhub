@@ -9,12 +9,12 @@
 import { RailsError, rails } from "./rails";
 import {
   type RailsServicesPage,
-  type RailsVerifiedPage,
+  type RailsAgentsPage,
   searchServices,
   toListingEntry,
   toPublisherListItem,
   toSearchResults,
-  toVerifiedListItem,
+  toAgentListItem,
 } from "./search";
 import { currentToken } from "./session";
 
@@ -49,6 +49,18 @@ async function me() {
   }
 }
 
+type RailsMyAgent = {
+  handle: string | null;
+  name?: string | null;
+  card: { exists: boolean; publishable: boolean; missing: string[] };
+  services: Parameters<typeof toAgentListItem>[0]["services"];
+};
+
+// The signed-in member's own agent; null for a visitor.
+function myAgent() {
+  return signedIn<RailsMyAgent>("/registry/me", {});
+}
+
 // A signed-in read; a visitor (no token) gets null rather than an error, so
 // the page shows its empty state.
 async function signedIn<T>(path: string, query: Record<string, string | number | undefined>) {
@@ -80,9 +92,25 @@ export const FUNCTIONS: Record<string, Handler> = {
   // The signed-in member.
   "users:me": me,
   "users:ensure": me,
-  // The member's agent handle is their profile slug, which /auth/me does not
-  // return; no link until a read returns it.
-  "publishers:getMyProfileHandle": async () => null,
+  // The member's agent (GET /api/v1/registry/me): its handle is the profile
+  // slug, which /auth/me does not return.
+  "publishers:getMyProfileHandle": async () => (await myAgent())?.handle ?? null,
+  // The dashboard's owner selector: the member's own agent, as owner.
+  "publishers:listMine": async () => {
+    const agent = await myAgent();
+    if (!agent?.handle) return [];
+    return [{ publisher: toAgentListItem({ handle: agent.handle, name: agent.name, services: agent.services }), role: "owner" }];
+  },
+  // The dashboard's items: the services the member's card offers.
+  "skills:listDashboardPaginated": async () => {
+    const agent = await myAgent();
+    const page = (agent?.services ?? []).map((service) =>
+      toListingEntry({ handle: agent?.handle ?? "", agent: { name: agent?.name }, service }).skill,
+    );
+    return { page, isDone: true, continueCursor: "" };
+  },
+  // The dashboard's plugins: products have no source on Urbicana yet.
+  "packages:list": async () => [],
 
   // Search: "which agents offer this?" (GET /api/v1/registry/skills?ask=).
   // Signed in only; a visitor's search returns nothing rather than an error.
@@ -92,16 +120,17 @@ export const FUNCTIONS: Record<string, Handler> = {
     const limit = typeof args.limit === "number" ? args.limit : undefined;
     return toSearchResults(await searchServices(ask, { token: await currentToken() }), limit);
   },
-  // With a query: the agents whose services match it. Without one: the
-  // verified agents (GET /api/v1/registry/agents/verified), for /official and
-  // the home page. ClawHub asks /official for organisations (kind: "org");
-  // Urbicana's agents are people and businesses alike, so kind is not used.
+  // With a query: the agents whose services match it. Without one: every
+  // agent with a publishable card (GET /api/v1/registry/agents), for
+  // /official and the home page. ClawHub asks /official for organisations
+  // (kind: "org"); Urbicana's agents are people and businesses alike, so kind
+  // is not used.
   "publishers:listPublicPage": async (args) => {
     const ask = String(args.query ?? "").trim();
     const pagination = (args.paginationOpts ?? {}) as { numItems?: number; cursor?: string | null };
     const numItems = Number(pagination.numItems ?? 25);
     if (!ask) {
-      const response = await signedIn<RailsVerifiedPage>("/registry/agents/verified", {
+      const response = await signedIn<RailsAgentsPage>("/registry/agents", {
         limit: numItems,
         cursor: pagination.cursor ?? undefined,
       });
@@ -109,7 +138,7 @@ export const FUNCTIONS: Record<string, Handler> = {
       const total = response?.total ?? 0;
       const counts = { all: total, organizations: 0, individuals: total };
       return {
-        page: agents.map(toVerifiedListItem),
+        page: agents.map(toAgentListItem),
         isDone: !response?.next_cursor,
         continueCursor: response?.next_cursor ?? "",
         counts,

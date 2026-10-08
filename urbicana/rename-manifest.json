@@ -8,6 +8,7 @@
     "name": 2
   },
   "src/components/Header.tsx": {
+    "copy:<GitHubLogo sign-in />": 1,
     "copy:Search skills, plugins, and creators": 2,
     "copy:Start typing to search skills, plugins, and creators": 1,
     "copy:Unable to search skills. Please try again later.": 1,
@@ -62,6 +63,12 @@
     "name": 1
   },
   "src/components/dashboard/DashboardWelcome.tsx": {
+    "copy:Publish your first skill or plugin for others to discover and use.": 1,
+    "copy:>Add skill or plugin<": 1,
+    "copy:>Skills<": 1,
+    "copy:>Plugins<": 1,
+    "copy:>Official<": 1,
+    "copy:welcome Docs link": 1,
     "name": 3
   },
   "src/components/skillDetailUtils.ts": {
@@ -99,6 +106,7 @@
     "copy:label: \"Official\"": 2,
     "copy:label: \"Publish Skill\"": 1,
     "copy:label: \"Publish Plugin\"": 1,
+    "copy:SECONDARY_NAV_ITEMS": 1,
     "name": 1
   },
   "src/lib/og.ts": {

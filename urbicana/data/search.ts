@@ -160,25 +160,27 @@ export function toListingEntry(row: RailsServiceRow) {
   return { skill: toNativeSkill(agent, row.service), ownerHandle: row.handle, owner: toPublisher(agent) };
 }
 
-// GET /api/v1/registry/agents/verified.
-type RailsVerifiedAgent = {
+// GET /api/v1/registry/agents: every agent with a publishable card.
+type RailsAgentRow = {
   handle: string | null;
   name?: string | null;
   description?: string | null;
   url?: string | null;
+  claimed?: boolean;
   services: RailsSkill[];
 };
-export type RailsVerifiedPage = { agents: RailsVerifiedAgent[]; next_cursor: string | null; total: number };
+export type RailsAgentsPage = { agents: RailsAgentRow[]; next_cursor: string | null; total: number };
 
-export function toVerifiedListItem(agent: RailsVerifiedAgent) {
+// No badge: whether a claimed agent is marked is not decided yet (phae,
+// 2026-10-08); `claimed` is passed through Rails' answer and not shown.
+export function toAgentListItem(agent: RailsAgentRow) {
   const item = toPublisherListItem({
     handle: agent.handle ?? "",
     name: agent.name,
     url: agent.url,
-    trust: { record_cited: true },
     skills: agent.services,
   });
-  return { ...item, bio: agent.description ?? undefined, official: true };
+  return { ...item, bio: agent.description ?? undefined, official: false };
 }
 
 // ClawHub's PublicPublisherListItem for one agent in a search.

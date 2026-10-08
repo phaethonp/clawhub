@@ -12,8 +12,10 @@
 export const WORDS = {
   service: "Service",
   services: "Services",
-  product: "Product",
-  products: "Products",
+  // ClawHub's plugins are Urbicana's marketplaces (marketplaces.ts) and keep
+  // the name; "Products" was dropped on 2026-10-08.
+  product: "Plugin",
+  products: "Plugins",
   verified: "Verified",
   agents: "Agents",
 } as const;
@@ -62,10 +64,42 @@ const SEARCH = "src/routes/search.tsx";
 const SERVICES = "src/routes/skills/index.tsx";
 const SERVICES_RESULTS = "src/routes/skills/-SkillsResults.tsx";
 const AGENTS_PAGE = "src/routes/official/index.tsx";
+const PLUGINS_PAGE = "src/routes/plugins/index.tsx";
+const PLUGIN_PAGE = "src/routes/plugins/$name.tsx";
+const PUBLIC_API_URL = "src/lib/publicApiUrl.ts";
 
 const { service, services, products, product, verified, agents } = WORDS;
 
 export const FILE_RULES: FileRule[] = [
+  // The plugins catalogue is "Plug into your city" (marketplaces.ts); its
+  // items come from data/http.ts.
+  phrase(PLUGINS_PAGE, '<h1 className="browse-title">Plugins</h1>', '<h1 className="browse-title">Plug into your city</h1>'),
+  phrase(PLUGINS_PAGE, '<h1 className="browse-title">\n            Plugins\n', '<h1 className="browse-title">\n            Plug into your city\n'),
+
+  // Pages rendered on the server call ClawHub's public API at the Convex
+  // site address, which Urbicana does not have. They call the fork itself,
+  // which answers those paths (data/http.ts): URBICANA_SELF_ORIGIN in
+  // development (plugin.ts), else this server's PORT on loopback.
+  phrase(
+    PUBLIC_API_URL,
+    '  const base =\n    resolveAbsoluteBaseUrl(\n      getRuntimeEnv("VITE_CONVEX_SITE_URL"),\n      getRuntimeEnv("VITE_CONVEX_URL"),\n    ) ?? getRequiredRuntimeEnv("VITE_CONVEX_URL");\n  return new URL(normalizedPath, base);',
+    '  const base =\n    process.env.URBICANA_SELF_ORIGIN ?? `http://127.0.0.1:${process.env.PORT ?? "3000"}`;\n  return new URL(normalizedPath, base);',
+  ),
+
+  // A plugin's page is a marketplace's page (urbicana/pages/Marketplace.tsx).
+  // Its loader read ClawHub's package API; the marketplace is known here.
+  {
+    file: PLUGIN_PAGE,
+    name: "copy:plugin page loader",
+    pattern: /  loader: async \(\{ location, params \}\) => \{\n    const data = await loadPluginDetail\(params\.name\);[\s\S]*?\n    return data;\n  \},\n/g,
+    to: "  loader: () => undefined,\n",
+  },
+  phrase(PLUGIN_PAGE, "  component: PluginDetailRoute,\n});", "  component: MarketplaceRoute,\n});\n\nimport { MarketplaceRoute } from \"../../../urbicana/pages/Marketplace\";"),
+  // The tiles of ClawHub's home apps section read the home page's tokens;
+  // ClawHub maps them onto the shared ones for its dashboard. The same
+  // mapping for the plugin page, where a marketplace shows its tiles.
+  phrase(STYLES, ".dashboard-route {\n  --dashboard-row-grid", ".dashboard-route,\n.plugin-detail-page {\n  --dashboard-row-grid"),
+
   // Navigation (header tabs and footer "Browse" / "Publish").
   phrase(NAV, 'label: "Skills"', `label: "${services}"`),
   phrase(NAV, 'label: "Plugins"', `label: "${products}"`),
@@ -79,13 +113,13 @@ export const FILE_RULES: FileRule[] = [
 
   // The header links nowhere outside Urbicana: ClawHub's only secondary item
   // is "Docs" -> docs.openclaw.ai/clawhub, drawn in the desktop rail, the
-  // "More" menu and the mobile sheet. Urbicana's secondary item is the
-  // professionals directory.
+  // "More" menu and the mobile sheet. Urbicana has none: the people are
+  // reached through the plugins (marketplaces.ts).
   {
     file: NAV,
     name: "copy:SECONDARY_NAV_ITEMS",
     pattern: /export const SECONDARY_NAV_ITEMS: NavItem\[\] = \[[\s\S]*?\n\];/g,
-    to: 'export const SECONDARY_NAV_ITEMS: NavItem[] = [{ label: "Professionals", to: "/publishers" }];',
+    to: "export const SECONDARY_NAV_ITEMS: NavItem[] = [];",
   },
   // Sign-in is the member's Urbicana account (data/auth.tsx), not GitHub.
   { file: HEADER, name: "copy:<GitHubLogo sign-in />", pattern: /<GitHubLogo className="github-sign-in-logo"[^>]*\/>/g, to: "" },
@@ -202,16 +236,6 @@ export const FILE_RULES: FileRule[] = [
     OG_ASSETS,
     'getServerUrl("clawd-mark.png"),\n      getServerUrl("public/clawd-mark.png"),',
     'getServerUrl("urbicana/public/clawd-mark.png"),\n      getServerUrl("clawd-mark.png"),\n      getServerUrl("public/clawd-mark.png"),',
-  ),
-
-  // The professionals directory in the footer's Browse column, after Agents
-  // (anchored on `to: PublicRegistryPaths.official`, which no other rule
-  // rewrites). In the header it is the secondary item (SECONDARY_NAV_ITEMS
-  // below), so it moves into ClawHub's "More" menu when the rail is too wide.
-  phrase(
-    NAV,
-    "to: PublicRegistryPaths.official },",
-    'to: PublicRegistryPaths.official },\n      { kind: "link", label: "Professionals", to: "/publishers" },',
   ),
 
   // /publishers (upstream: a redirect to /official) is the professionals

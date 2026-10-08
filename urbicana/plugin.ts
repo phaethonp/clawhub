@@ -121,6 +121,14 @@ export function urbicana(): Plugin {
     },
 
     configureServer(server) {
+      // The fork's own address, for pages rendered on the server that call
+      // ClawHub's public API (src/lib/publicApiUrl.ts, rule in copy.ts).
+      server.httpServer?.once("listening", () => {
+        const address = server.httpServer?.address();
+        if (address && typeof address === "object") {
+          process.env.URBICANA_SELF_ORIGIN = `http://127.0.0.1:${address.port}`;
+        }
+      });
       // Development only: forward /urbicana-api/* to Rails' /api/v1/*. Done
       // here rather than with server.proxy because TanStack Start's server
       // middleware answers unknown paths before Vite's proxy sees them.

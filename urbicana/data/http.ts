@@ -3,6 +3,7 @@
 // requests here before ClawHub's own /api/** handler (plugin.ts in dev).
 // The member is identified by the session cookie (session.ts).
 
+import { MARKETPLACES, toPluginListItem } from "../marketplaces";
 import { searchServices, toSearchResults } from "./search";
 
 export { tokenFromCookie } from "./session";
@@ -19,11 +20,18 @@ export const HTTP_ROUTES: Record<string, Route> = {
     return { status: 200, body: { results: toSearchResults(search, Number.isFinite(limit) ? limit : 25) } };
   },
 
-  // ClawHub's plugins are Urbicana's products, which have no source yet
-  // (MAPPING.md): the catalogue answers that there are none, so pages show
-  // their empty state instead of an error.
-  "/api/v1/plugins/search": async () => ({ status: 200, body: { results: [] } }),
-  "/api/v1/plugins": async () => ({ status: 200, body: { items: [], nextCursor: null, totalCount: 0 } }),
+  // ClawHub's plugins are Urbicana's marketplaces (marketplaces.ts).
+  "/api/v1/plugins/search": async (url) => {
+    const q = (url.searchParams.get("q") ?? "").trim().toLowerCase();
+    const results = MARKETPLACES.filter((marketplace) =>
+      `${marketplace.title} ${marketplace.summary}`.toLowerCase().includes(q),
+    ).map((marketplace) => ({ score: 1, package: toPluginListItem(marketplace) }));
+    return { status: 200, body: { results } };
+  },
+  "/api/v1/plugins": async () => ({
+    status: 200,
+    body: { items: MARKETPLACES.map(toPluginListItem), nextCursor: null, totalCount: MARKETPLACES.length },
+  }),
 
   // ClawHub's header promotions: none on Urbicana.
   "/api/v1/promotions": async () => ({ status: 200, body: { promotions: [] } }),

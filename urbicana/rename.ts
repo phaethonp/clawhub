@@ -48,8 +48,9 @@ export const RULES: Rule[] = [
 // Upstream source the rules apply to: the app under src/, not its tests.
 export function isRenamedSource(path: string) {
   const p = path.replace(/\\/g, "/");
-  // CSS takes only its file rules (copy.ts), not the global renames.
-  if (!/\/src\/.+\.(ts|tsx|css)$/.test(p)) return false;
+  // CSS takes only its file rules (copy.ts), not the global renames. The
+  // server's share-image code (server/og/) is renamed like src/.
+  if (!/\/src\/.+\.(ts|tsx|css)$/.test(p) && !/\/server\/og\/[^/]+\.ts$/.test(p)) return false;
   if (p.includes("/node_modules/") || p.includes("/urbicana/")) return false;
   if (/\.test\.(ts|tsx)$/.test(p) || p.includes("/__tests__/") || /\/-[^/]*test[^/]*$/.test(p)) {
     return false;
@@ -91,7 +92,7 @@ function walk(dir: string, out: string[]) {
 // Counts per file across upstream's source, as the manifest records them.
 export function scan(root: string): Record<string, Counts> {
   const result: Record<string, Counts> = {};
-  for (const file of walk(join(root, "src"), []).sort()) {
+  for (const file of [...walk(join(root, "src"), []), ...walk(join(root, "server", "og"), [])].sort()) {
     if (!isRenamedSource(file)) continue;
     const { counts } = rename(readFileSync(file, "utf8"), relative(root, file));
     if (Object.keys(counts).length) result[relative(root, file)] = counts;

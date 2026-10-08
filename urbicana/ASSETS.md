@@ -28,13 +28,16 @@ with its designer and rights.
 
 Done since this list was first written (copy.ts, data/auth.tsx): the home
 hero, the footer (description, links, copyright, ecosystem strip), the
-header's Docs link, "Sign in with GitHub".
+header's Docs link, "Sign in with GitHub", the home page's apps grid and
+"Bring your skills" CLI section.
 
-- The home page's "Bring your skills" section about ClawHub's CLI.
 - `llms.txt`: ClawHub's summary for AI crawlers, generated from its docs;
   not served (NOT_SERVED in assets.ts) until Urbicana writes its own, which
   agents will use to find the hub.
-- Share images the server draws per skill, plugin and profile
-  (`server/og/`) still read `og-clawhub-watermark.png` and `clawd-mark.png`
-  from upstream's `public/` on disk, so they keep the lobster until the build
-  step copies Urbicana's files into `.output/server/` as well.
+- Share images the server draws (`server/og/`): artwork and name are
+  Urbicana's since 2026-10-08 (development reads `urbicana/public/` first;
+  the build copies Urbicana's art into the built server). Their content is
+  still ClawHub's: the service card says "Downloads", "Audit PASS" and an
+  `openclaw skills install` line, and the profile card's corner cuts off
+  "Urbicana Registry". A share card designed for services and agents
+  replaces them.

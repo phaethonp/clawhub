@@ -35,6 +35,10 @@ const CONTENT_TYPES: Record<string, string> = {
 
 // Where the built site's public files land (Nitro, and Vercel's output).
 const OUTPUT_PUBLIC_DIRS = [".output/public", ".vercel/output/static"];
+// Where the built server reads its share-image artwork (scripts/copy-og-assets.ts
+// copies upstream's there; Urbicana's replace them).
+const OUTPUT_SERVER_DIRS = [".output/server", ".vercel/output/functions/__server.func"];
+const OG_ART = ["clawd-logo.png", "clawd-mark.png", "og-clawhub-watermark.png"];
 
 export function urbicana(): Plugin {
   const root = repoRoot();
@@ -180,6 +184,11 @@ export function urbicana(): Plugin {
             copyFileSync(join(root, "urbicana", "public", file), dest);
           }
           for (const file of NOT_SERVED) rmSync(join(target, file), { force: true });
+        }
+        for (const outDir of OUTPUT_SERVER_DIRS) {
+          const target = join(root, outDir);
+          if (!existsSync(target)) continue;
+          for (const file of OG_ART) copyFileSync(join(root, "urbicana", "public", file), join(target, file));
         }
       },
     },

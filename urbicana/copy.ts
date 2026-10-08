@@ -54,6 +54,7 @@ const PUBLISHERS_ROUTE = "src/routes/publishers/index.tsx";
 const STYLES = "src/styles.css";
 const ROOT_ROUTE = "src/routes/__root.tsx";
 const NOT_FOUND = "src/components/GenericNotFoundPage.tsx";
+const OG_ASSETS = "server/og/ogAssets.ts";
 const HOME_AGENTS = "src/components/HomePopularPublishersSection.tsx";
 const LIST_ROW = "src/components/SkillListingRow.tsx";
 const PUBLISHER_ROW = "src/components/PublisherListItem.tsx";
@@ -147,6 +148,8 @@ export const FILE_RULES: FileRule[] = [
   // apps ClawHub's skills plug into (src/lib/homeApps.ts), and the footer's
   // scrolling band of ClawHub phrases (empty phrases leave the band blank).
   // [^>]*: in development TanStack's devtools add attributes to the tag.
+  // The "Bring your skills to ClawHub" section is about ClawHub's CLI.
+  { file: HOME_ROUTE, name: "copy:<HomeBringSkillsSection />", pattern: /\n[ \t]*<HomeBringSkillsSection[^>]*\/>/g, to: "" },
   { file: HOME_ROUTE, name: "copy:<HomeAppsSection />", pattern: /\n[ \t]*<HomeAppsSection[^>]*\/>/g, to: "" },
   {
     file: FOOTER,
@@ -175,6 +178,25 @@ export const FILE_RULES: FileRule[] = [
     NOT_FOUND,
     "We couldn't find a skill, plugin, or profile at this URL. Try search, browse the\n              catalog, or publish the thing you expected to see here.",
     "We couldn't find a service, product, agent, or professional at this URL. Try search or\n              browse the catalogue.",
+  ),
+
+  // Share images the server draws (server/og/) look for Urbicana's artwork
+  // first: urbicana/public/ in development (the server root is the project),
+  // and the copies plugin.ts writes into the built server in production.
+  phrase(
+    OG_ASSETS,
+    'getServerUrl("clawd-logo.png"),\n      getServerUrl("public/clawd-logo.png"),',
+    'getServerUrl("urbicana/public/clawd-logo.png"),\n      getServerUrl("clawd-logo.png"),\n      getServerUrl("public/clawd-logo.png"),',
+  ),
+  phrase(
+    OG_ASSETS,
+    'getServerUrl("og-clawhub-watermark.png"),\n      getServerUrl("public/og-clawhub-watermark.png"),',
+    'getServerUrl("urbicana/public/og-clawhub-watermark.png"),\n      getServerUrl("og-clawhub-watermark.png"),\n      getServerUrl("public/og-clawhub-watermark.png"),',
+  ),
+  phrase(
+    OG_ASSETS,
+    'getServerUrl("clawd-mark.png"),\n      getServerUrl("public/clawd-mark.png"),',
+    'getServerUrl("urbicana/public/clawd-mark.png"),\n      getServerUrl("clawd-mark.png"),\n      getServerUrl("public/clawd-mark.png"),',
   ),
 
   // The professionals directory in the footer's Browse column, after Agents

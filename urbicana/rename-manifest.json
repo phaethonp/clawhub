@@ -1,4 +1,15 @@
 {
+  "server/og/ogAssets.ts": {
+    "copy:getServerUrl(\"clawd-logo.png\"),\n      getServerUrl(\"public/clawd-logo.png\"),": 2,
+    "copy:getServerUrl(\"og-clawhub-watermark.png\"),\n      getServerUrl(\"public/og-clawhub-watermark.png\"),": 1,
+    "copy:getServerUrl(\"clawd-mark.png\"),\n      getServerUrl(\"public/clawd-mark.png\"),": 1
+  },
+  "server/og/publisherOgSvg.ts": {
+    "name": 2
+  },
+  "server/og/registryOgSvg.ts": {
+    "name": 3
+  },
   "src/components/AppProviders.tsx": {
     "name": 1
   },
@@ -183,6 +194,7 @@
     "host": 1
   },
   "src/routes/index.tsx": {
+    "copy:<HomeBringSkillsSection />": 1,
     "copy:<HomeAppsSection />": 1,
     "home-headline": 1,
     "home-lede": 1

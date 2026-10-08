@@ -68,6 +68,19 @@ See also: [acceptable-usage.md](./acceptable-usage.md) for the marketplace polic
 - moderator: hide/restore skills, view hidden skills, unhide, soft-delete, ban users (except admins).
 - admin: all moderator actions + hard delete skills, change owners, change roles.
 
+## Manual package scan backfill
+
+- The public `packages.backfillPackageReleaseScans` action requires an active
+  authenticated admin before traversing releases or enqueueing any scan work.
+  Anonymous, ordinary-user, moderator, deleted, and deactivated callers must
+  leave scan queues and scheduled backfill work unchanged.
+- Manual clients must send an admin session through Convex Auth. The public
+  wrapper must not accept a caller-supplied user id or rely on queue deduplication
+  as authorization.
+- The internal backfill and its scheduled continuations retain service access
+  without a user session. Cron calls that internal entry point directly; placing
+  the public admin guard inside it would break scheduled maintenance.
+
 ## Ban + unban batches
 
 - Ban/unban skill batches are paginated and may continue after the mutation that
@@ -712,6 +725,10 @@ See also: [acceptable-usage.md](./acceptable-usage.md) for the marketplace polic
   read-only, fully paginated exact-version job reconciliation before admission.
 - Package/plugin scan backfills may recompute deterministic static scan results for older releases,
   but those results remain ClawScan context and are not public trust status.
+- `packages.backfillLatestPackageScanStatus` is an admin-only catalog maintenance entry point.
+  Anonymous callers and signed-in non-admins are rejected before any package, release, or
+  search-digest write. An admin call runs the internal paged mutation, which patches drifted
+  scan status and schedules the next batch until the catalog page is done.
 - ClawPack package releases materialize parsed npm-pack artifact entries into the release file
   surface. Static scan, LLM review, package inspect/file APIs, and Codex package ClawScan use those
   stored artifact entries instead of metadata-only `package.json` / `openclaw.plugin.json` rows.

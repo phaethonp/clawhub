@@ -48,7 +48,8 @@ export const RULES: Rule[] = [
 // Upstream source the rules apply to: the app under src/, not its tests.
 export function isRenamedSource(path: string) {
   const p = path.replace(/\\/g, "/");
-  if (!/\/src\/.+\.(ts|tsx)$/.test(p)) return false;
+  // CSS takes only its file rules (copy.ts), not the global renames.
+  if (!/\/src\/.+\.(ts|tsx|css)$/.test(p)) return false;
   if (p.includes("/node_modules/") || p.includes("/urbicana/")) return false;
   if (/\.test\.(ts|tsx)$/.test(p) || p.includes("/__tests__/") || /\/-[^/]*test[^/]*$/.test(p)) {
     return false;
@@ -65,7 +66,8 @@ export function rename(code: string, path = ""): { code: string; counts: Counts 
   let next = code;
   const normalized = path.replace(/\\/g, "/");
   const fileRules = FILE_RULES.filter((rule) => normalized === rule.file || normalized.endsWith(`/${rule.file}`));
-  for (const rule of [...fileRules, ...RULES]) {
+  const globalRules = /\.css$/.test(normalized) ? [] : RULES;
+  for (const rule of [...fileRules, ...globalRules]) {
     let hits = 0;
     next = next.replace(rule.pattern, (...match) => {
       hits += 1;

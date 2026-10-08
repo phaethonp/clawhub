@@ -51,6 +51,7 @@ const HOME_ROUTE = "src/routes/index.tsx";
 const WELCOME = "src/components/dashboard/DashboardWelcome.tsx";
 const SKILLS_SH_DETAIL = "src/components/SkillsShCatalogDetail.tsx";
 const PUBLISHERS_ROUTE = "src/routes/publishers/index.tsx";
+const STYLES = "src/styles.css";
 const HOME_AGENTS = "src/components/HomePopularPublishersSection.tsx";
 const LIST_ROW = "src/components/SkillListingRow.tsx";
 const PUBLISHER_ROW = "src/components/PublisherListItem.tsx";
@@ -75,12 +76,13 @@ export const FILE_RULES: FileRule[] = [
 
   // The header links nowhere outside Urbicana: ClawHub's only secondary item
   // is "Docs" -> docs.openclaw.ai/clawhub, drawn in the desktop rail, the
-  // "More" menu and the mobile sheet (Header.tsx handles an empty list).
+  // "More" menu and the mobile sheet. Urbicana's secondary item is the
+  // professionals directory.
   {
     file: NAV,
     name: "copy:SECONDARY_NAV_ITEMS",
     pattern: /export const SECONDARY_NAV_ITEMS: NavItem\[\] = \[[\s\S]*?\n\];/g,
-    to: "export const SECONDARY_NAV_ITEMS: NavItem[] = [];",
+    to: 'export const SECONDARY_NAV_ITEMS: NavItem[] = [{ label: "Professionals", to: "/publishers" }];',
   },
   // Sign-in is the member's Urbicana account (data/auth.tsx), not GitHub.
   { file: HEADER, name: "copy:<GitHubLogo sign-in />", pattern: /<GitHubLogo className="github-sign-in-logo"[^>]*\/>/g, to: "" },
@@ -108,6 +110,37 @@ export const FILE_RULES: FileRule[] = [
   ),
   phrase(HOME_LIST, 'useState<ListingKind>(initialListing?.kind ?? "plugins")', 'useState<ListingKind>(initialListing?.kind ?? "skills")'),
 
+  // ClawHub hides secondary header items into its "More" menu below 1100px,
+  // sized for its labels; Urbicana's (Services, Products, Agents,
+  // Professionals) are ~85px wider, and between 1110px and 1280px the
+  // secondary item slid under the centred search box. Same mechanism, wider
+  // threshold (1370px, measured with the rule below).
+  phrase(
+    STYLES,
+    "@media (max-width: 1100px) {\n  .navbar-calm-rail-link-secondary {",
+    "@media (max-width: 1370px) {\n  .navbar-calm-rail-link-secondary {",
+  ),
+
+  // ClawHub's compact header (brand name hidden, tighter rail, compact Sign
+  // in) applies from 761px to 1100px, sized for "ClawHub"; with "Urbicana
+  // Registry" the rail and its More button reached under the search box
+  // from 1105px to ~1210px. Same block, wider range.
+  phrase(
+    STYLES,
+    "@media (max-width: 1100px) and (min-width: 761px) {\n  .navbar-top {\n    grid-template-columns: max-content max-content minmax(180px, 1fr) auto;",
+    "@media (max-width: 1370px) and (min-width: 761px) {\n  .navbar-top {\n    grid-template-columns: max-content max-content minmax(180px, 1fr) auto;",
+  ),
+
+  // ClawHub folds the header rail into its mobile menu at 920px; Urbicana's
+  // compact rail with its More button still reached under the search box up
+  // to 975px. Same block, threshold 990px. (Thresholds measured 2026-10-08:
+  // no header control under the search box at any width from 760 to 1440.)
+  phrase(
+    STYLES,
+    "@media (max-width: 920px) {\n  .navbar-calm .navbar-calm-rail {",
+    "@media (max-width: 990px) {\n  .navbar-calm .navbar-calm-rail {",
+  ),
+
   // Hidden until there is Urbicana content for them: the home page's grid of
   // apps ClawHub's skills plug into (src/lib/homeApps.ts), and the footer's
   // scrolling band of ClawHub phrases (empty phrases leave the band blank).
@@ -125,6 +158,16 @@ export const FILE_RULES: FileRule[] = [
   // an image the component draws its own placeholder.
   phrase(HOME_AGENTS, "publisher.image ?? `https://github.com/${publisher.handle}.png`", "publisher.image"),
   phrase(SKILLS_SH_DETAIL, "image: `https://github.com/${githubOwner}.png?size=96`,", "image: undefined,"),
+
+  // The professionals directory in the footer's Browse column, after Agents
+  // (anchored on `to: PublicRegistryPaths.official`, which no other rule
+  // rewrites). In the header it is the secondary item (SECONDARY_NAV_ITEMS
+  // below), so it moves into ClawHub's "More" menu when the rail is too wide.
+  phrase(
+    NAV,
+    "to: PublicRegistryPaths.official },",
+    'to: PublicRegistryPaths.official },\n      { kind: "link", label: "Professionals", to: "/publishers" },',
+  ),
 
   // /publishers (upstream: a redirect to /official) is the professionals
   // directory: the people on the public record, per register

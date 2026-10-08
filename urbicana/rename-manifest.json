@@ -114,6 +114,7 @@
     "copy:label: \"Publish Skill\"": 1,
     "copy:label: \"Publish Plugin\"": 1,
     "copy:SECONDARY_NAV_ITEMS": 1,
+    "copy:to: PublicRegistryPaths.official },": 1,
     "copy:footer Ecosystem and Community": 1,
     "copy:FOOTER_PLATFORM_LINKS": 1,
     "copy:footer Audits link": 1,
@@ -233,5 +234,10 @@
   },
   "src/routes/skills/publish.tsx": {
     "name": 4
+  },
+  "src/styles.css": {
+    "copy:@media (max-width: 1100px) {\n  .navbar-calm-rail-link-secondary {": 1,
+    "copy:@media (max-width: 1100px) and (min-width: 761px) {\n  .navbar-top {\n    grid-template-columns: max-content max-content minmax(180px, 1fr) auto;": 1,
+    "copy:@media (max-width: 920px) {\n  .navbar-calm .navbar-calm-rail {": 1
   }
 }

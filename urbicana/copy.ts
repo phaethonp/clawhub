@@ -176,6 +176,17 @@ export const FILE_RULES: FileRule[] = [
     to: "export const FOOTER_PLATFORM_LINKS: ReadonlyArray<{ label: string; href: string }> = [];",
   },
 
+  // phae, 2026-10-08: the copyright is Urbicana's, and the footer does not
+  // link ClawHub's security-audit page (scans of installable skills and
+  // plugins; Urbicana's services are hired, not installed).
+  phrase(FOOTER, "© 2026 OpenClaw Foundation", "© 2026 Urbicana"),
+  {
+    file: NAV,
+    name: "copy:footer Audits link",
+    pattern: /\n      \{\n        kind: "link",\n        label: "Audits",[\s\S]*?\n      \},/g,
+    to: "",
+  },
+
   // Footer description.
   phrase(FOOTER, "Skills and plugins for OpenClaw agents. Part of the wider OpenClaw ecosystem.", "Services and products, found and sold agent to agent."),
 

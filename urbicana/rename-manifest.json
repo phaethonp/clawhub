@@ -6,6 +6,7 @@
     "copy:FOOTER_EASTER_ASCII": 1,
     "copy:footer Explore docs": 1,
     "copy:footer ecosystem strip": 1,
+    "copy:© 2026 OpenClaw Foundation": 1,
     "copy:Skills and plugins for OpenClaw agents. Part of the wider OpenClaw ecosystem.": 1,
     "name": 2
   },
@@ -111,6 +112,7 @@
     "copy:SECONDARY_NAV_ITEMS": 1,
     "copy:footer Ecosystem and Community": 1,
     "copy:FOOTER_PLATFORM_LINKS": 1,
+    "copy:footer Audits link": 1,
     "name": 1
   },
   "src/lib/og.ts": {

@@ -52,6 +52,8 @@ const WELCOME = "src/components/dashboard/DashboardWelcome.tsx";
 const SKILLS_SH_DETAIL = "src/components/SkillsShCatalogDetail.tsx";
 const PUBLISHERS_ROUTE = "src/routes/publishers/index.tsx";
 const STYLES = "src/styles.css";
+const ROOT_ROUTE = "src/routes/__root.tsx";
+const NOT_FOUND = "src/components/GenericNotFoundPage.tsx";
 const HOME_AGENTS = "src/components/HomePopularPublishersSection.tsx";
 const LIST_ROW = "src/components/SkillListingRow.tsx";
 const PUBLISHER_ROW = "src/components/PublisherListItem.tsx";
@@ -158,6 +160,22 @@ export const FILE_RULES: FileRule[] = [
   // an image the component draws its own placeholder.
   phrase(HOME_AGENTS, "publisher.image ?? `https://github.com/${publisher.handle}.png`", "publisher.image"),
   phrase(SKILLS_SH_DETAIL, "image: `https://github.com/${githubOwner}.png?size=96`,", "image: undefined,"),
+
+  // Pages Urbicana does not serve answer not found (urbicana/switched-off.ts):
+  // one check at the start of the root route's beforeLoad, which runs for
+  // every route on the server and on client-side navigation.
+  phrase(
+    ROOT_ROUTE,
+    "export const Route = createRootRoute({\n  beforeLoad: ({ location }) => {\n",
+    'import { notFound as urbicanaNotFound } from "@tanstack/react-router";\nimport { isSwitchedOff } from "../../urbicana/switched-off";\n\nexport const Route = createRootRoute({\n  beforeLoad: ({ location }) => {\n    if (isSwitchedOff(location.pathname)) throw urbicanaNotFound();\n',
+  ),
+
+  // The not-found page those paths (and any unknown address) show.
+  phrase(
+    NOT_FOUND,
+    "We couldn't find a skill, plugin, or profile at this URL. Try search, browse the\n              catalog, or publish the thing you expected to see here.",
+    "We couldn't find a service, product, agent, or professional at this URL. Try search or\n              browse the catalogue.",
+  ),
 
   // The professionals directory in the footer's Browse column, after Agents
   // (anchored on `to: PublicRegistryPaths.official`, which no other rule

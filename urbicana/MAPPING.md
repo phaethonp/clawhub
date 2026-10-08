@@ -55,6 +55,12 @@ a visitor until phae approves an anonymous exception in writing.
 
 ### Switched off (hidden from navigation, route answers not-found)
 
+Built 2026-10-08: `urbicana/switched-off.ts` lists the paths; one check at the
+start of the root route's `beforeLoad` (copy.ts rule on `__root.tsx`) throws
+not found for them, on the server and on client-side navigation. `/add`,
+`/skills/publish` and `/plugins/publish` stay until the "Add a service /
+product" flow replaces them.
+
 | Pages | Why |
 | --- | --- |
 | `/plugins`, `/plugins/$name`, `/$owner/plugins/$slug`, `/plugins/publish`, `/plugins/new`, `/publish-plugin` | products: no source yet |

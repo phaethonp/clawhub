@@ -10,6 +10,9 @@
     "copy:Skills and plugins for OpenClaw agents. Part of the wider OpenClaw ecosystem.": 1,
     "name": 2
   },
+  "src/components/GenericNotFoundPage.tsx": {
+    "copy:We couldn't find a skill, plugin, or profile at this URL. Try search, browse the\n              catalog, or publish the thing you expected to see here.": 1
+  },
   "src/components/Header.tsx": {
     "copy:<GitHubLogo sign-in />": 1,
     "copy:Search skills, plugins, and creators": 2,
@@ -165,6 +168,9 @@
   },
   "src/routes/-management/SearchInsightsPage.tsx": {
     "name": 4
+  },
+  "src/routes/__root.tsx": {
+    "copy:export const Route = createRootRoute({\n  beforeLoad: ({ location }) => {\n": 1
   },
   "src/routes/account-banned.tsx": {
     "name": 2

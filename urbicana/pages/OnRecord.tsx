@@ -63,6 +63,7 @@ const PAGE_SIZE = 50;
 type Directory = { source: string; register_table: string | null; key_column: string | null };
 type RegistryRow = {
   entity_id: number | string;
+  handle?: string | null;
   first_name?: string | null;
   middle_name?: string | null;
   last_name?: string | null;
@@ -101,7 +102,9 @@ function toPublisher(row: RegistryRow): PublicPublisherListItem {
     _id: `entity:${row.entity_id}` as PublicPublisherListItem["_id"],
     _creationTime: 0,
     kind: person ? "user" : "org",
-    handle: `entity-${row.entity_id}`,
+    // The record's slug from Rails: the claiming member's profile slug, or
+    // the record's own all_entities.slug.
+    handle: row.handle ?? "",
     displayName: name,
     image: undefined,
     bio: [row.license_type, row.license_status, row.state].filter(Boolean).join(" · ") || undefined,

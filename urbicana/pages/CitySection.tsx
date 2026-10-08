@@ -1,22 +1,22 @@
 // The home page banner: "Plug into your city". Built from ClawHub's home
 // section src/components/HomeAppsSection.tsx ("Skills for the apps you
 // already use"), in the place it had: its heading block, tabs (the cities)
-// and tiles (the marketplaces in the chosen city, each opening its plugin
+// and tiles (the city plugins in the chosen city, each opening its plugin
 // page).
 
 import { useState } from "react";
 import { Store } from "lucide-react";
-import { PLUG_INTO_YOUR_CITY, marketplacesIn } from "../marketplaces";
+import { PLUG_INTO_YOUR_CITY, cityPluginsIn } from "../city-plugins";
 import { CityTabs, TileGrid } from "./CityTiles";
 
 export function CitySection() {
   const [city, setCity] = useState("new-york");
-  const tiles = marketplacesIn(city).map((marketplace) => ({
-    key: marketplace.name,
-    name: marketplace.title,
-    lines: [marketplace.summary],
-    title: marketplace.summary,
-    to: `/plugins/${marketplace.name}`,
+  const tiles = cityPluginsIn(city).map((plugin) => ({
+    key: plugin.name,
+    name: plugin.title,
+    lines: [plugin.summary],
+    title: plugin.summary,
+    to: `/plugins/${plugin.name}`,
     icon: Store,
   }));
 
@@ -32,7 +32,7 @@ export function CitySection() {
           </div>
         </div>
         <CityTabs value={city} onChange={setCity} />
-        <TileGrid label="Marketplaces" tiles={tiles} />
+        <TileGrid label="Plugins" tiles={tiles} />
       </div>
     </section>
   );

@@ -1,15 +1,18 @@
-// Urbicana's plugins: the marketplaces a member plugs into, per city. ClawHub's
+// Urbicana's plugins: the city plugins a member plugs into, per city. ClawHub's
 // plugins catalogue (/plugins) lists them and each has ClawHub's plugin page
 // (/plugins/<name>). Wording of "Every discipline that builds the city." is
 // phae's (2026-10-08 design); the "Plug into your city" line is the one phae
 // chose from my proposal the same day.
+//
+// They are plugins for a member's city. Never "marketplace" or "platform",
+// in the pages or in this code (phae, 2026-10-08: nobody joins a marketplace).
 //
 // Which registers each discipline covers is the mapping that comes next,
 // built by a tool; until then a discipline opens the professionals list.
 
 export const PLUG_INTO_YOUR_CITY = {
   title: "Plug into your city",
-  line: "Ready-made marketplaces that plug you straight into the professionals and businesses of your city.",
+  line: "Ready-made plugins that plug you straight into the professionals and businesses of your city.",
 };
 
 export type City = { id: string; label: string; live: boolean };
@@ -25,7 +28,7 @@ export const CITIES: City[] = [
 
 export type Discipline = { id: string; name: string; description?: string; source: string };
 
-export type Marketplace = {
+export type CityPlugin = {
   name: string;
   title: string;
   summary: string;
@@ -34,7 +37,7 @@ export type Marketplace = {
   disciplines: Record<string, Discipline[]>;
 };
 
-export const MARKETPLACES: Marketplace[] = [
+export const CITY_PLUGINS: CityPlugin[] = [
   {
     name: "city-disciplines",
     title: "Every discipline that builds the city.",
@@ -74,23 +77,23 @@ export const MARKETPLACES: Marketplace[] = [
   },
 ];
 
-export function findMarketplace(name: string) {
-  return MARKETPLACES.find((marketplace) => marketplace.name === name) ?? null;
+export function findCityPlugin(name: string) {
+  return CITY_PLUGINS.find((plugin) => plugin.name === name) ?? null;
 }
 
-export function marketplacesIn(cityId: string) {
-  return MARKETPLACES.filter((marketplace) => marketplace.disciplines[cityId]?.length);
+export function cityPluginsIn(cityId: string) {
+  return CITY_PLUGINS.filter((plugin) => plugin.disciplines[cityId]?.length);
 }
 
 // ClawHub's plugin list item (src/lib/packageApi.ts PackageListItem).
-export function toPluginListItem(marketplace: Marketplace) {
+export function toPluginListItem(plugin: CityPlugin) {
   return {
-    name: marketplace.name,
-    displayName: marketplace.title,
+    name: plugin.name,
+    displayName: plugin.title,
     family: "bundle-plugin" as const,
     channel: "official" as const,
     isOfficial: false,
-    summary: marketplace.summary,
+    summary: plugin.summary,
     ownerHandle: null,
     createdAt: 0,
     updatedAt: 0,

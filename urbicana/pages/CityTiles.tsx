@@ -1,10 +1,10 @@
 // The city tabs and tile grid of ClawHub's home apps section
 // (src/components/HomeAppsSection.tsx), shared by the home banner and a
-// marketplace's page. Same classes; cities not live yet are shown disabled.
+// city plugin's page. Same classes; cities not live yet are shown disabled.
 
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, MapPin, type LucideIcon } from "lucide-react";
-import { CITIES } from "../marketplaces";
+import { CITIES } from "../city-plugins";
 
 export function CityTabs({ value, onChange }: { value: string; onChange: (cityId: string) => void }) {
   return (

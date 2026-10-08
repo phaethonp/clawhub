@@ -3,7 +3,7 @@
 // requests here before ClawHub's own /api/** handler (plugin.ts in dev).
 // The member is identified by the session cookie (session.ts).
 
-import { MARKETPLACES, toPluginListItem } from "../marketplaces";
+import { CITY_PLUGINS, toPluginListItem } from "../city-plugins";
 import { searchServices, toSearchResults } from "./search";
 
 export { tokenFromCookie } from "./session";
@@ -20,17 +20,17 @@ export const HTTP_ROUTES: Record<string, Route> = {
     return { status: 200, body: { results: toSearchResults(search, Number.isFinite(limit) ? limit : 25) } };
   },
 
-  // ClawHub's plugins are Urbicana's marketplaces (marketplaces.ts).
+  // ClawHub's plugins are Urbicana's city plugins (city-plugins.ts).
   "/api/v1/plugins/search": async (url) => {
     const q = (url.searchParams.get("q") ?? "").trim().toLowerCase();
-    const results = MARKETPLACES.filter((marketplace) =>
-      `${marketplace.title} ${marketplace.summary}`.toLowerCase().includes(q),
-    ).map((marketplace) => ({ score: 1, package: toPluginListItem(marketplace) }));
+    const results = CITY_PLUGINS.filter((plugin) =>
+      `${plugin.title} ${plugin.summary}`.toLowerCase().includes(q),
+    ).map((plugin) => ({ score: 1, package: toPluginListItem(plugin) }));
     return { status: 200, body: { results } };
   },
   "/api/v1/plugins": async () => ({
     status: 200,
-    body: { items: MARKETPLACES.map(toPluginListItem), nextCursor: null, totalCount: MARKETPLACES.length },
+    body: { items: CITY_PLUGINS.map(toPluginListItem), nextCursor: null, totalCount: CITY_PLUGINS.length },
   }),
 
   // ClawHub's header promotions: none on Urbicana.

@@ -33,6 +33,9 @@ const PAGE_SIZE = 50;
 type Directory = { source: string; register_table: string | null; key_column: string | null };
 type RegistryRow = {
   entity_id: number | string;
+  first_name?: string | null;
+  middle_name?: string | null;
+  last_name?: string | null;
   person_name?: string | null;
   business_name?: string | null;
   license_type?: string | null;
@@ -50,7 +53,9 @@ function registerLabel(source: string) {
 }
 
 function toPublisher(row: RegistryRow): PublicPublisherListItem {
-  const person = row.person_name?.trim();
+  // The default register returns the parts of a name and no person_name.
+  const parts = [row.first_name, row.middle_name, row.last_name].map((part) => part?.trim()).filter(Boolean);
+  const person = row.person_name?.trim() || (parts.length ? parts.join(" ") : undefined);
   const business = row.business_name?.trim();
   const name = person || business || `Record ${row.entity_id}`;
   return {

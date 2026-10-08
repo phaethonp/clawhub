@@ -24,6 +24,7 @@ import { BrowseResultsSkeleton } from "../../src/components/skeletons/BrowseResu
 import { Button } from "../../src/components/ui/button";
 import type { BrowseCategory } from "../../src/lib/categories";
 import type { PublicPublisherListItem } from "../../src/lib/publicUser";
+import { SITE_NAME } from "../brand";
 import { rails } from "../data/rails";
 import { session } from "../data/session";
 
@@ -138,7 +139,7 @@ export function OnRecordPage() {
     return (
       <main className="browse-page browse-page-borderless-header">
         {/* ClawHub's sign-in card, as on every signed-in page; not restyled per page. */}
-        <SignInPrompt title="Sign in to browse who is on record." />
+        <SignInPrompt title={`Sign in to ${SITE_NAME}`} />
       </main>
     );
   }

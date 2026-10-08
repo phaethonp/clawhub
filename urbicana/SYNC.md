@@ -4,13 +4,20 @@
 Urbicana's data wired underneath. It serves hub.urbicana.com.
 
 **Rule: upstream's files are never edited.** Everything Urbicana adds lives in
-`urbicana/`. Proof at any time:
+`urbicana/`, plus one file GitHub only reads from its own folder:
+`.github/workflows/urbicana.yml` (brand check, type check, production build
+on every push to `urbicana`). Proof at any time:
 
 ```bash
-git diff --stat main...urbicana -- . ':!urbicana'
+git diff --stat main...urbicana -- . ':!urbicana' ':!.github/workflows/urbicana.yml'
 ```
 
 must print nothing.
+
+**ClawHub's GitHub workflows are disabled on the fork** (all 35 on
+2026-10-08: their CI, deploys, releases and hourly or daily jobs would run on
+this account without their secrets). A sync that adds a workflow brings it in
+enabled; step 6 below disables it.
 
 ## Branches
 
@@ -92,10 +99,14 @@ professionals, 404 for not-served files, no errors.
      `assets.ts`; if it announces ClawHub's services, add it to `NOT_SERVED`.
    - **replaces nothing**: upstream renamed or removed that file. Find where
      its reference moved and rename the replacement to match.
-6. Start the site and look at `/`, `/skills`, `/official`, a skill page, a
+6. Disable any workflow the update added:
+   `gh workflow list -R phaethonp/clawhub --all --json id,path,state` and
+   `gh workflow disable <id> -R phaethonp/clawhub` for every `active` one
+   other than `urbicana.yml`.
+7. Start the site and look at `/`, `/skills`, `/official`, a skill page, a
    publisher page and a missing page, in light and dark: nothing says
    ClawHub, no lobster art.
-7. Record the merge in this file's log below.
+8. Record the merge in this file's log below.
 
 ## Log
 

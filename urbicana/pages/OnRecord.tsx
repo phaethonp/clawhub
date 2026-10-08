@@ -40,24 +40,6 @@ import { SITE_NAME } from "../brand";
 import { rails } from "../data/rails";
 import { session } from "../data/session";
 
-// The registers record a state as its postal code; the picker shows the
-// name (design-audit copy/clarity: a bare code is vague). Codes not listed
-// (provinces, foreign entries) show as recorded.
-const STATE_NAMES: Record<string, string> = {
-  AL: "Alabama", AK: "Alaska", AZ: "Arizona", AR: "Arkansas", CA: "California", CO: "Colorado",
-  CT: "Connecticut", DE: "Delaware", DC: "District of Columbia", FL: "Florida", GA: "Georgia",
-  HI: "Hawaii", ID: "Idaho", IL: "Illinois", IN: "Indiana", IA: "Iowa", KS: "Kansas", KY: "Kentucky",
-  LA: "Louisiana", ME: "Maine", MD: "Maryland", MA: "Massachusetts", MI: "Michigan", MN: "Minnesota",
-  MS: "Mississippi", MO: "Missouri", MT: "Montana", NE: "Nebraska", NV: "Nevada", NH: "New Hampshire",
-  NJ: "New Jersey", NM: "New Mexico", NY: "New York", NC: "North Carolina", ND: "North Dakota",
-  OH: "Ohio", OK: "Oklahoma", OR: "Oregon", PA: "Pennsylvania", RI: "Rhode Island",
-  SC: "South Carolina", SD: "South Dakota", TN: "Tennessee", TX: "Texas", UT: "Utah", VT: "Vermont",
-  VA: "Virginia", WA: "Washington", WV: "West Virginia", WI: "Wisconsin", WY: "Wyoming",
-  PR: "Puerto Rico", GU: "Guam", VI: "U.S. Virgin Islands",
-};
-const stateName = (code: string) => STATE_NAMES[code] ?? code;
-
-const DEFAULT_REGISTER = "all_states_licensed_professionals";
 const PAGE_SIZE = 50;
 
 type Directory = { source: string; register_table: string | null; key_column: string | null };
@@ -73,7 +55,7 @@ type RegistryRow = {
   license_status?: string | null;
   state?: string | null;
 };
-type RegistryPage = { rows: RegistryRow[]; total?: number | null };
+type RegistryPage = { rows: RegistryRow[]; total?: number | null; searchable?: boolean };
 type Count = { source: string; count: number };
 type StatePlace = { state: string; total: number; sources: Count[] };
 type Place = { city: string; state: string; total: number; sources: Count[] };
@@ -83,14 +65,6 @@ type Place = { city: string; state: string; total: number; sources: Count[] };
 const LocationSelect = BrowseCategorySelect as unknown as (
   props: Parameters<typeof BrowseCategorySelect>[0] & { labels: { all: string; search: string; name: string } },
 ) => ReturnType<typeof BrowseCategorySelect>;
-
-// A register's table name as words ("nys_real_estate_licenses" -> "NYS real
-// estate licenses"); the discipline names replace these with the mapping.
-function registerLabel(source: string) {
-  const words = source.split("_").map((word) => (/^(nys|nyc|dob|fdic)$/.test(word) ? word.toUpperCase() : word));
-  const text = words.join(" ");
-  return text.charAt(0).toUpperCase() + text.slice(1);
-}
 
 function toPublisher(row: RegistryRow): PublicPublisherListItem {
   // The default register returns the parts of a name and no person_name.
@@ -128,6 +102,7 @@ export function OnRecordPage() {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [failed, setFailed] = useState(false);
+  const [listSearchable, setListSearchable] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const request = useRef(0);
 
@@ -140,9 +115,11 @@ export function OnRecordPage() {
     [cityEntry, stateEntry],
   );
   const inPlace = Boolean(stateEntry);
-  const source = register ?? placeSources[0]?.source ?? DEFAULT_REGISTER;
-  // Name search runs on the default register, which records no city.
-  const searchable = source === DEFAULT_REGISTER && !cityEntry;
+  // The register shown: the one picked, else the one with the most people in
+  // the place, else the first declared register.
+  const source = register ?? placeSources[0]?.source ?? directories?.[0]?.source;
+  // Whether the list answers a name search is Rails's to say (searchable).
+  const searchable = listSearchable && !cityEntry;
 
   useEffect(() => {
     if (!signedIn) return;
@@ -201,6 +178,7 @@ export function OnRecordPage() {
           setRows((current) => (nextPage === 1 ? response.rows : [...current, ...response.rows]));
           if (nextPage === 1 || typeof response.total === "number") setTotal(response.total ?? null);
           setPage(nextPage);
+          setListSearchable(Boolean(response.searchable));
         })
         .catch(() => id === request.current && setFailed(true))
         .finally(() => id === request.current && setLoading(false));
@@ -210,11 +188,11 @@ export function OnRecordPage() {
 
   useEffect(() => {
     // Wait for the states, so the first list is already in the first state.
-    if (signedIn && states !== null) load(1);
-  }, [signedIn, states, load]);
+    if (signedIn && states !== null && source) load(1);
+  }, [signedIn, states, source, load]);
 
   const stateOptions: BrowseCategory[] = useMemo(
-    () => (states ?? []).map((entry) => ({ slug: entry.state, label: stateName(entry.state), icon: "globe" })),
+    () => (states ?? []).map((entry) => ({ slug: entry.state, label: entry.state, icon: "globe" })),
     [states],
   );
   const cityOptions: BrowseCategory[] = useMemo(
@@ -225,7 +203,7 @@ export function OnRecordPage() {
   const categories: BrowseCategory[] = useMemo(
     () =>
       (inPlace ? placeSources.map((entry) => entry.source) : (directories ?? []).map((directory) => directory.source)).map(
-        (name) => ({ slug: name, label: registerLabel(name), icon: "database" }),
+        (name) => ({ slug: name, label: name, icon: "database" }),
       ),
     [inPlace, placeSources, directories],
   );

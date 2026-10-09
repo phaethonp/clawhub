@@ -44,6 +44,7 @@ type RegistryRow = {
   person_name?: string | null;
   business_name?: string | null;
   license_type?: string | null;
+  license_type_name?: string | null;
   license_status?: string | null;
   state?: string | null;
 };
@@ -65,7 +66,9 @@ function toPublisher(row: RegistryRow): PublicPublisherListItem {
     handle: row.handle ?? "",
     displayName: name,
     image: undefined,
-    bio: [row.license_type, row.license_status, row.state].filter(Boolean).join(" · ") || undefined,
+    // The role by its name (license_type_canonical, from Rails), else its
+    // code as the register records it.
+    bio: [row.license_type_name || row.license_type, row.license_status, row.state].filter(Boolean).join(" · ") || undefined,
     stats: { skills: 0, packages: 0, installs: 0, downloads: 0, stars: 0 },
     publishedItems: [],
   } as unknown as PublicPublisherListItem;

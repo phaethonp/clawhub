@@ -7,8 +7,8 @@
 // They are plugins for a member's city. Never "marketplace" or "platform",
 // in the pages or in this code (phae, 2026-10-08: nobody joins a marketplace).
 //
-// Which registers each discipline covers is the mapping that comes next,
-// built by a tool; until then a discipline opens the professionals list.
+// A plugin's disciplines are the roles its register records
+// (all_states_licensed_professionals.license_type), read from Rails.
 
 export const PLUG_INTO_YOUR_CITY = {
   title: "Plug into your city",
@@ -37,15 +37,16 @@ export function resolveCityCategory(value: string | null | undefined) {
   return CITY_CATEGORIES.find((category) => category.slug === value)?.slug;
 }
 
-export type Discipline = { id: string; name: string; description?: string; source: string };
 
 export type CityPlugin = {
   name: string;
   title: string;
   summary: string;
   eyebrow: string;
-  // Disciplines per live city id.
-  disciplines: Record<string, Discipline[]>;
+  // The cities it is offered in. Its disciplines are not listed here: they
+  // are the roles the register records, read from Rails
+  // (GET /server_b/registry/license_counts) by its page.
+  cities: string[];
 };
 
 export const CITY_PLUGINS: CityPlugin[] = [
@@ -55,36 +56,7 @@ export const CITY_PLUGINS: CityPlugin[] = [
     summary:
       "The people behind New York's buildings and deals — curated, discipline by discipline, each one drawn from the public record.",
     eyebrow: "New York now · More cities soon",
-    disciplines: {
-      "new-york": [
-        {
-          id: "architects",
-          name: "Architects",
-          description: "Registered architects filing new builds and adaptive reuse across the boroughs.",
-          source: "On record · DOB",
-        },
-        {
-          id: "developers",
-          name: "Developers",
-          description: "The owners and sponsors assembling sites and moving deals.",
-          source: "On record · ACRIS",
-        },
-        {
-          id: "general-contractors",
-          name: "General Contractors",
-          description: "The firms that put the work in place, permit by permit.",
-          source: "On record · DOB",
-        },
-        {
-          id: "structural-engineers",
-          name: "Structural Engineers",
-          description: "The PEs behind facades, foundations, and FISP cycles.",
-          source: "On record · DOB",
-        },
-        // Its line is cut off in the design; added when phae gives it.
-        { id: "electricians", name: "Electricians", source: "On record · DOB" },
-      ],
-    },
+    cities: ["new-york"],
   },
 ];
 
@@ -93,7 +65,7 @@ export function findCityPlugin(name: string) {
 }
 
 export function cityPluginsIn(cityId: string) {
-  return CITY_PLUGINS.filter((plugin) => plugin.disciplines[cityId]?.length);
+  return CITY_PLUGINS.filter((plugin) => plugin.cities.includes(cityId));
 }
 
 // What ClawHub's plugin page head reads (detail.package) for a city plugin.

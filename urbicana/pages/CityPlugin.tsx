@@ -7,26 +7,37 @@
 // "Plugin not found" state.
 
 import { useParams } from "@tanstack/react-router";
-import { Building2, DraftingCompass, HardHat, Landmark, Users, Zap, type LucideIcon } from "lucide-react";
-import { useState } from "react";
+import { Users } from "lucide-react";
+import { useEffect, useState } from "react";
 import { DetailBody, DetailHero, DetailPageShell } from "../../src/components/DetailPageShell";
 import { EmptyState } from "../../src/components/EmptyState";
 import { Container } from "../../src/components/layout/Container";
 import { findCityPlugin } from "../city-plugins";
+import { rails } from "../data/rails";
 import { CityTabs, TileGrid } from "./CityTiles";
-
-const DISCIPLINE_ICONS: Record<string, LucideIcon> = {
-  architects: DraftingCompass,
-  developers: Landmark,
-  "general-contractors": HardHat,
-  "structural-engineers": Building2,
-  electricians: Zap,
-};
 
 export function CityPluginRoute() {
   const { name } = useParams({ strict: false }) as { name?: string };
   const plugin = name ? findCityPlugin(name) : null;
   const [city, setCity] = useState("new-york");
+  // The plugin's disciplines: every role the register records
+  // (all_states_licensed_professionals.license_type) with its count of people
+  // on record, from GET /server_b/registry/license_counts with no codes.
+  const [roles, setRoles] = useState<Array<[string, number]>>([]);
+  useEffect(() => {
+    if (!plugin) return;
+    let cancelled = false;
+    rails<Record<string, number>>("/server_b/registry/license_counts")
+      .then((counts) => {
+        if (!cancelled) setRoles(Object.entries(counts).sort((a, b) => b[1] - a[1]));
+      })
+      .catch(() => {
+        if (!cancelled) setRoles([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [plugin]);
 
   if (!plugin) {
     return (
@@ -38,14 +49,15 @@ export function CityPluginRoute() {
     );
   }
 
-  const tiles = (plugin.disciplines[city] ?? []).map((discipline) => ({
-    key: discipline.id,
-    name: discipline.name,
-    lines: [discipline.description, discipline.source].filter((line): line is string => Boolean(line)),
-    title: discipline.description,
-    to: "/publishers",
-    icon: DISCIPLINE_ICONS[discipline.id] ?? Users,
-  }));
+  const tiles = plugin.cities.includes(city)
+    ? roles.map(([role, people]) => ({
+        key: role,
+        name: role,
+        lines: [people.toLocaleString()],
+        to: "/publishers",
+        icon: Users,
+      }))
+    : [];
 
   return (
     <main className="section detail-page-section plugin-detail-page">

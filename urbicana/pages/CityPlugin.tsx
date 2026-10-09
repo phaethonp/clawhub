@@ -2,25 +2,27 @@
 // (src/routes/plugins/$name.tsx, its component and loader replaced by
 // copy.ts). Built from that page's pieces: its main section, DetailPageShell
 // and DetailHero with the breadcrumbs, title and summary line; below, the
-// city tabs and discipline tiles of ClawHub's home apps section
+// city tabs of ClawHub's home apps section; the directories and their roles
+// as ClawHub's publisher profile tab bar and label-and-count chips
 // (CityTiles.tsx). A name that is not a plugin gets the page's own
 // "Plugin not found" state.
 
-import { useParams } from "@tanstack/react-router";
-import { Users } from "lucide-react";
+import { useNavigate, useParams } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { DetailBody, DetailHero, DetailPageShell } from "../../src/components/DetailPageShell";
 import { EmptyState } from "../../src/components/EmptyState";
-import { Card, CardContent, CardHeader, CardTitle } from "../../src/components/ui/card";
+import { BrowseChipTabs, BrowseControls, BrowseControlsRow, BrowseSegmentedTabs } from "../../src/components/BrowseControls";
 import { Container } from "../../src/components/layout/Container";
 import { findCityPlugin } from "../city-plugins";
 import { rails } from "../data/rails";
-import { CityTabs, TileGrid } from "./CityTiles";
+import { CityTabs } from "./CityTiles";
 
 export function CityPluginRoute() {
   const { name } = useParams({ strict: false }) as { name?: string };
   const plugin = name ? findCityPlugin(name) : null;
   const [city, setCity] = useState("new-york");
+  const [directory, setDirectory] = useState<string | undefined>(undefined);
+  const navigate = useNavigate();
   // The plugin's disciplines: every role the register records
   // (all_states_licensed_professionals.license_type) with its count of people
   // on record, from GET /server_b/registry/license_counts with no codes.
@@ -74,32 +76,27 @@ export function CityPluginRoute() {
     );
   }
 
-  const tiles = plugin.cities.includes(city)
-    ? roles.map(([role, people]) => ({
-        key: role,
-        name: meanings[role]?.meaning ?? role,
-        lines: [people.toLocaleString()],
-        title: meanings[role]?.description ?? undefined,
-        to: "/publishers",
-        icon: Users,
-      }))
-    : [];
   // DOB writes licence types in capitals; labels are sentence case
   // (openclaw-brand).
   const sentenceCase = (raw: string) => raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
-  // Each group's subtitle is its directory: the register's declared name
-  // (entity_spine_declarations.source) spaced, as /registry-v3 names
+  // A directory is named by its register's declared name
+  // (entity_spine_declarations.source), spaced, as /registry-v3 names
   // directories.
   const directoryLabel = (source: string) => sentenceCase(source.replace(/_/g, " "));
-  const contractorTiles = plugin.cities.includes(city)
-    ? contractors.map((entry) => ({
-        key: entry.label,
-        name: sentenceCase(entry.label),
-        lines: [entry.count.toLocaleString()],
-        to: "/publishers",
-        icon: Users,
-      }))
+  // Each directory with the roles it records and their counts.
+  const directories = plugin.cities.includes(city)
+    ? [
+        {
+          source: "all_states_licensed_professionals",
+          roles: roles.map(([code, count]) => ({ value: code, label: meanings[code]?.meaning ?? code, count })),
+        },
+        {
+          source: "contractor_licenses_nyc",
+          roles: contractors.map((entry) => ({ value: entry.label, label: sentenceCase(entry.label), count: entry.count })),
+        },
+      ].filter((entry) => entry.roles.length)
     : [];
+  const shown = directories.find((entry) => entry.source === directory) ?? directories[0];
 
   return (
     <main className="section detail-page-section plugin-detail-page">
@@ -128,23 +125,38 @@ export function CityPluginRoute() {
         <DetailBody>
           <p className="home-v2-section-eyebrow">{plugin.eyebrow}</p>
           <CityTabs value={city} onChange={setCity} />
-          {/* Each directory as a section the way ClawHub's plugin page draws
-              one (its Install card: Card, CardHeader, CardTitle). */}
-          {[
-            { source: "all_states_licensed_professionals", group: tiles },
-            { source: "contractor_licenses_nyc", group: contractorTiles },
-          ]
-            .filter((section) => section.group.length)
-            .map((section) => (
-              <Card key={section.source} className="skill-install-command-card">
-                <CardHeader className="detail-hero-summary-row plugin-install-card-header">
-                  <CardTitle className="skill-install-panel-title">{directoryLabel(section.source)}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <TileGrid label={directoryLabel(section.source)} tiles={section.group} />
-                </CardContent>
-              </Card>
-            ))}
+          {/* The directories as ClawHub's publisher profile shows its catalog
+              groups (src/routes/user/$handle.tsx: publisher-profile-tab-bar,
+              BrowseSegmentedTabs with a count per group); the chosen
+              directory's roles as ClawHub's label-and-count chips. */}
+          {shown ? (
+            <div className="publisher-profile-tab-bar">
+              <BrowseControls>
+                <BrowseControlsRow>
+                  <BrowseSegmentedTabs
+                    ariaLabel="Directories"
+                    options={directories.map((entry) => ({
+                      value: entry.source,
+                      label: directoryLabel(entry.source),
+                      count: entry.roles.reduce((sum, role) => sum + role.count, 0).toLocaleString(),
+                    }))}
+                    value={shown.source}
+                    onChange={(value) => value && setDirectory(value)}
+                  />
+                </BrowseControlsRow>
+                <BrowseChipTabs
+                  ariaLabel={directoryLabel(shown.source)}
+                  options={shown.roles.map((role) => ({
+                    value: role.value,
+                    label: role.label,
+                    count: role.count.toLocaleString(),
+                  }))}
+                  value={undefined}
+                  onChange={() => navigate({ to: "/publishers" })}
+                />
+              </BrowseControls>
+            </div>
+          ) : null}
         </DetailBody>
       </DetailPageShell>
     </main>

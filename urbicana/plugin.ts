@@ -17,7 +17,7 @@ import type { Nitro } from "nitro/types";
 import type { Alias, Plugin, UserConfig } from "vite";
 import { NOT_SERVED, replacements } from "./assets";
 import { checkAll, repoRoot } from "./check";
-import { HTTP_ROUTES, httpRouteFor, tokenFromCookie } from "./data/http";
+import { HTTP_ROUTES, tokenFromCookie } from "./data/http";
 import { isRenamedSource, rename } from "./rename";
 
 const CONTENT_TYPES: Record<string, string> = {
@@ -75,7 +75,6 @@ export function urbicana(): Plugin {
         nitro.options.handlers.unshift(
           { route: "/urbicana-api/**", handler: server("rails-forward.ts") },
           ...Object.keys(HTTP_ROUTES).map((route) => ({ route, handler: server("api-routes.ts") })),
-          { route: "/api/v1/packages/**", handler: server("api-routes.ts") },
           ...NOT_SERVED.map((file) => ({ route: `/${file}`, handler: server("not-served.ts") })),
         );
       },
@@ -164,15 +163,15 @@ export function urbicana(): Plugin {
       // (data/http.ts), answered before ClawHub's own /api/** handler.
       server.middlewares.use(async (req, res, next) => {
         const path = (req.url ?? "").split("?")[0];
-        const route = path.startsWith("/api/") ? httpRouteFor(path) : undefined;
+        const route = path.startsWith("/api/") ? HTTP_ROUTES[path] : undefined;
         if (!route) return next();
         try {
           const url = new URL(req.url ?? "/", "http://localhost");
           const token = tokenFromCookie(req.headers.cookie);
-          const { status, body, contentType } = await route(url, token, railsOrigin);
+          const { status, body } = await route(url, token, railsOrigin);
           res.statusCode = status;
-          res.setHeader("Content-Type", contentType ?? "application/json");
-          res.end(contentType ? String(body) : JSON.stringify(body));
+          res.setHeader("Content-Type", "application/json");
+          res.end(JSON.stringify(body));
         } catch (error) {
           res.statusCode = 502;
           res.setHeader("Content-Type", "application/json");

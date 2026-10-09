@@ -68,6 +68,13 @@ export function cityPluginsIn(cityId: string) {
   return CITY_PLUGINS.filter((plugin) => plugin.cities.includes(cityId));
 }
 
+// What ClawHub's plugin page head reads (detail.package) for a city plugin.
+export function cityPluginHeadData(name: string) {
+  const plugin = findCityPlugin(name);
+  if (!plugin) return undefined;
+  return { detail: { package: { name: plugin.name, displayName: plugin.title, summary: plugin.summary }, owner: null } };
+}
+
 // ClawHub's plugin list item (src/lib/packageApi.ts PackageListItem).
 export function toPluginListItem(plugin: CityPlugin) {
   return {

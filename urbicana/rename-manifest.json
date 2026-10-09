@@ -217,6 +217,11 @@
     "copy:>No official organizations found<": 1,
     "name": 2
   },
+  "src/routes/plugins/$name.tsx": {
+    "copy:plugin page loader": 1,
+    "copy:  component: PluginDetailRoute,\n});": 1,
+    "copy:head: ({ params, loaderData }) => pluginDetailHead(params.name, loaderData),": 1
+  },
   "src/routes/plugins/index.tsx": {
     "copy:<h1 className=\"browse-title\">Plugins</h1>": 1,
     "copy:<h1 className=\"browse-title\">\n            Plugins\n": 1,
@@ -268,6 +273,7 @@
     "name": 4
   },
   "src/styles.css": {
+    "copy:.dashboard-route {\n  --dashboard-row-grid": 1,
     "copy:@media (max-width: 1100px) {\n  .navbar-calm-rail-link-secondary {": 1,
     "copy:@media (max-width: 1100px) and (min-width: 761px) {\n  .navbar-top {\n    grid-template-columns: max-content max-content minmax(180px, 1fr) auto;": 1,
     "copy:@media (max-width: 920px) {\n  .navbar-calm .navbar-calm-rail {": 1

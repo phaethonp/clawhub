@@ -24,6 +24,10 @@ export function CityPluginRoute() {
   // (all_states_licensed_professionals.license_type) with its count of people
   // on record, from GET /server_b/registry/license_counts with no codes.
   const [roles, setRoles] = useState<Array<[string, number]>>([]);
+  // What each role code means, as DOB defines it (dob_code_meanings, domain
+  // applicant_professional_title). A code DOB does not define has no entry
+  // and shows as recorded.
+  const [meanings, setMeanings] = useState<Record<string, { meaning: string; description: string | null }>>({});
   useEffect(() => {
     if (!plugin) return;
     let cancelled = false;
@@ -33,6 +37,15 @@ export function CityPluginRoute() {
       })
       .catch(() => {
         if (!cancelled) setRoles([]);
+      });
+    rails<Record<string, { meaning: string; description: string | null }>>("/server_b/registry/code_meanings", {
+      query: { domain: "applicant_professional_title" },
+    })
+      .then((found) => {
+        if (!cancelled) setMeanings(found);
+      })
+      .catch(() => {
+        if (!cancelled) setMeanings({});
       });
     return () => {
       cancelled = true;
@@ -52,8 +65,9 @@ export function CityPluginRoute() {
   const tiles = plugin.cities.includes(city)
     ? roles.map(([role, people]) => ({
         key: role,
-        name: role,
+        name: meanings[role]?.meaning ?? role,
         lines: [people.toLocaleString()],
+        title: meanings[role]?.description ?? undefined,
         to: "/publishers",
         icon: Users,
       }))

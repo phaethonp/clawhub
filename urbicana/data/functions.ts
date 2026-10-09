@@ -8,6 +8,7 @@
 
 import { RailsError, rails } from "./rails";
 import {
+  type RailsServiceRow,
   type RailsServicesPage,
   type RailsAgentsPage,
   searchServices,
@@ -22,7 +23,13 @@ export type Handler = (args: Record<string, unknown>) => Promise<unknown>;
 
 // GET /api/v1/auth/me, as ClawHub's users document.
 type RailsMe = {
-  user?: { id: number; name?: string | null; email?: string | null; slug?: string | null; created_at?: string };
+  user?: {
+    id: number;
+    name?: string | null;
+    email?: string | null;
+    slug?: string | null;
+    created_at?: string;
+  };
 };
 
 async function me() {
@@ -99,13 +106,24 @@ export const FUNCTIONS: Record<string, Handler> = {
   "publishers:listMine": async () => {
     const agent = await myAgent();
     if (!agent?.handle) return [];
-    return [{ publisher: toAgentListItem({ handle: agent.handle, name: agent.name, services: agent.services }), role: "owner" }];
+    return [
+      {
+        publisher: toAgentListItem({
+          handle: agent.handle,
+          name: agent.name,
+          services: agent.services,
+        }),
+        role: "owner",
+      },
+    ];
   },
   // The dashboard's items: the services the member's card offers.
   "skills:listDashboardPaginated": async () => {
     const agent = await myAgent();
-    const page = (agent?.services ?? []).map((service) =>
-      toListingEntry({ handle: agent?.handle ?? "", agent: { name: agent?.name }, service }).skill,
+    const page = (agent?.services ?? []).map(
+      (service) =>
+        toListingEntry({ handle: agent?.handle ?? "", agent: { name: agent?.name }, service })
+          .skill,
     );
     return { page, isDone: true, continueCursor: "" };
   },
@@ -149,7 +167,13 @@ export const FUNCTIONS: Record<string, Handler> = {
     const agents = token ? (await searchServices(ask, { token })).agents : [];
     const page = agents.slice(0, numItems).map(toPublisherListItem);
     const counts = { all: agents.length, organizations: 0, individuals: agents.length };
-    return { page, isDone: agents.length <= numItems, continueCursor: "", counts, globalCounts: counts };
+    return {
+      page,
+      isDone: agents.length <= numItems,
+      continueCursor: "",
+      counts,
+      globalCounts: counts,
+    };
   },
 
   // Services without a question (GET /api/v1/registry/services): the home
@@ -162,12 +186,61 @@ export const FUNCTIONS: Record<string, Handler> = {
       cursor: typeof args.cursor === "string" ? args.cursor : undefined,
       sort: args.sort === "newest" ? "newest" : "updated",
       verified: args.officialOnly ? "true" : undefined,
-      created_after: typeof args.createdAfter === "number" ? new Date(args.createdAfter).toISOString() : undefined,
+      created_after:
+        typeof args.createdAfter === "number"
+          ? new Date(args.createdAfter).toISOString()
+          : undefined,
       tag: typeof args.categorySlug === "string" ? args.categorySlug : undefined,
     });
     const services = response?.services ?? [];
-    return { page: services.map(toListingEntry), nextCursor: response?.next_cursor ?? null, hasMore: Boolean(response?.next_cursor) };
+    return {
+      page: services.map(toListingEntry),
+      nextCursor: response?.next_cursor ?? null,
+      hasMore: Boolean(response?.next_cursor),
+    };
   },
+  // One service's page (/$owner/skills/$slug): GET /api/v1/registry/services/
+  // :handle/:skill_id, as ClawHub's skills document. The owner is the agent's
+  // handle and the slug the service's id on its card; without an owner there
+  // is no lookup. A service has no published versions, so latestVersion is
+  // null and the page shows no readme or files.
+  "skills:getBySlug": async (args) => {
+    const owner = String(args.ownerHandle ?? "")
+      .trim()
+      .replace(/^@+/, "");
+    const slug = String(args.slug ?? "").trim();
+    if (!owner || !slug) return null;
+    let row: RailsServiceRow | null;
+    try {
+      row = await signedIn<RailsServiceRow>(
+        `/registry/services/${encodeURIComponent(owner)}/${encodeURIComponent(slug)}`,
+        {},
+      );
+    } catch (error) {
+      if (error instanceof RailsError && error.status === 404) return null;
+      throw error;
+    }
+    if (!row) return null;
+    const entry = toListingEntry(row);
+    return {
+      requestedSlug: slug,
+      resolvedSlug: slug,
+      skill: entry.skill,
+      latestVersion: null,
+      owner: entry.owner,
+      moderationInfo: null,
+      forkOf: null,
+      canonical: null,
+    };
+  },
+
+  // What a service's page reads besides the service, none of which Urbicana
+  // has: services have no published versions, no related-by-category list
+  // and no evaluation. Answered empty so the page does not wait on them.
+  "skills:listVersions": async () => [],
+  "skills:listRelatedByCategory": async () => ({ items: [] }),
+  "skillEvaluations:getCurrentForSkill": async () => null,
+
   // The "All" tab (ClawHub's Featured): no curation on Urbicana, so every
   // service, most recently updated first; with a query, the services search.
   "featuredSkills:listPublic": async (args) => {
@@ -187,7 +260,10 @@ export const FUNCTIONS: Record<string, Handler> = {
         ),
       };
     }
-    const response = await signedIn<RailsServicesPage>("/registry/services", { limit: 100, sort: "updated" });
+    const response = await signedIn<RailsServicesPage>("/registry/services", {
+      limit: 100,
+      sort: "updated",
+    });
     return { page: (response?.services ?? []).map(toListingEntry) };
   },
   "skills:countPublicSkills": async () => {

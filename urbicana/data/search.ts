@@ -115,8 +115,18 @@ export function toSearchResult(agent: RailsAgent, skill: RailsSkill) {
     },
     official: publisher.official,
     featured: false,
-    install: { kind: "clawhub" as const, reference: `${agent.handle}/${skill.id}`, sourceUrl: null },
-    sourceIdentity: { id: `${agent.handle}/${skill.id}`, owner: agent.handle, repo: null, host: null, lifetimeInstalls: null },
+    install: {
+      kind: "clawhub" as const,
+      reference: `${agent.handle}/${skill.id}`,
+      sourceUrl: null,
+    },
+    sourceIdentity: {
+      id: `${agent.handle}/${skill.id}`,
+      owner: agent.handle,
+      repo: null,
+      host: null,
+      lifetimeInstalls: null,
+    },
     trust: {
       visibility: "public" as const,
       installability: "installable" as const,
@@ -124,25 +134,35 @@ export function toSearchResult(agent: RailsAgent, skill: RailsSkill) {
       upstreamScanners: null,
       sourceFreshness: "native" as const,
     },
-    metrics: { rolling60DayInstalls: null, bookmarks: null, updatedAt: time(skill.updated_at) ?? 0 },
+    metrics: {
+      rolling60DayInstalls: null,
+      bookmarks: null,
+      updatedAt: time(skill.updated_at) ?? 0,
+    },
     native: { skill: toNativeSkill(agent, skill), ownerHandle: agent.handle, owner: publisher },
   };
 }
 
 // Every service in a search, best match first.
 export function toSearchResults(search: RailsSkillSearch, limit?: number) {
-  const rows = search.agents.flatMap((agent) => agent.skills.map((skill) => toSearchResult(agent, skill)));
+  const rows = search.agents.flatMap((agent) =>
+    agent.skills.map((skill) => toSearchResult(agent, skill)),
+  );
   rows.sort((a, b) => b.score - a.score);
   return typeof limit === "number" ? rows.slice(0, limit) : rows;
 }
 
 // GET /api/v1/registry/services: services listed without a question.
-type RailsServiceRow = {
+export type RailsServiceRow = {
   handle: string;
   agent: { name?: string | null; url?: string | null; verified?: boolean };
   service: RailsSkill;
 };
-export type RailsServicesPage = { services: RailsServiceRow[]; next_cursor: string | null; total: number };
+export type RailsServicesPage = {
+  services: RailsServiceRow[];
+  next_cursor: string | null;
+  total: number;
+};
 
 function agentOf(row: RailsServiceRow): RailsAgent {
   return {
@@ -157,7 +177,11 @@ function agentOf(row: RailsServiceRow): RailsAgent {
 // ClawHub's home and catalogue listing entry ({ skill, ownerHandle, owner }).
 export function toListingEntry(row: RailsServiceRow) {
   const agent = agentOf(row);
-  return { skill: toNativeSkill(agent, row.service), ownerHandle: row.handle, owner: toPublisher(agent) };
+  return {
+    skill: toNativeSkill(agent, row.service),
+    ownerHandle: row.handle,
+    owner: toPublisher(agent),
+  };
 }
 
 // GET /api/v1/registry/agents: every agent with a publishable card.
@@ -169,7 +193,11 @@ type RailsAgentRow = {
   claimed?: boolean;
   services: RailsSkill[];
 };
-export type RailsAgentsPage = { agents: RailsAgentRow[]; next_cursor: string | null; total: number };
+export type RailsAgentsPage = {
+  agents: RailsAgentRow[];
+  next_cursor: string | null;
+  total: number;
+};
 
 // No badge: whether a claimed agent is marked is not decided yet (phae,
 // 2026-10-08); `claimed` is passed through Rails' answer and not shown.

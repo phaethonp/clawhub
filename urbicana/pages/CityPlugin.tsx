@@ -11,6 +11,7 @@ import { Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { DetailBody, DetailHero, DetailPageShell } from "../../src/components/DetailPageShell";
 import { EmptyState } from "../../src/components/EmptyState";
+import { Card, CardContent, CardHeader, CardTitle } from "../../src/components/ui/card";
 import { Container } from "../../src/components/layout/Container";
 import { findCityPlugin } from "../city-plugins";
 import { rails } from "../data/rails";
@@ -127,18 +128,23 @@ export function CityPluginRoute() {
         <DetailBody>
           <p className="home-v2-section-eyebrow">{plugin.eyebrow}</p>
           <CityTabs value={city} onChange={setCity} />
-          {tiles.length ? (
-            <>
-              <h2 className="oc-section-title">{directoryLabel("all_states_licensed_professionals")}</h2>
-              <TileGrid label={directoryLabel("all_states_licensed_professionals")} tiles={tiles} />
-            </>
-          ) : null}
-          {contractorTiles.length ? (
-            <>
-              <h2 className="oc-section-title">{directoryLabel("contractor_licenses_nyc")}</h2>
-              <TileGrid label={directoryLabel("contractor_licenses_nyc")} tiles={contractorTiles} />
-            </>
-          ) : null}
+          {/* Each directory as a section the way ClawHub's plugin page draws
+              one (its Install card: Card, CardHeader, CardTitle). */}
+          {[
+            { source: "all_states_licensed_professionals", group: tiles },
+            { source: "contractor_licenses_nyc", group: contractorTiles },
+          ]
+            .filter((section) => section.group.length)
+            .map((section) => (
+              <Card key={section.source} className="skill-install-command-card">
+                <CardHeader className="detail-hero-summary-row plugin-install-card-header">
+                  <CardTitle className="skill-install-panel-title">{directoryLabel(section.source)}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <TileGrid label={directoryLabel(section.source)} tiles={section.group} />
+                </CardContent>
+              </Card>
+            ))}
         </DetailBody>
       </DetailPageShell>
     </main>

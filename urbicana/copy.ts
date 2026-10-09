@@ -65,7 +65,6 @@ const SERVICES = "src/routes/skills/index.tsx";
 const SERVICES_RESULTS = "src/routes/skills/-SkillsResults.tsx";
 const AGENTS_PAGE = "src/routes/official/index.tsx";
 const PLUGINS_PAGE = "src/routes/plugins/index.tsx";
-const PLUGIN_PAGE = "src/routes/plugins/$name.tsx";
 const PUBLIC_API_URL = "src/lib/publicApiUrl.ts";
 const PLUGIN_ROW = "src/components/PluginListItem.tsx";
 
@@ -100,26 +99,6 @@ export const FILE_RULES: FileRule[] = [
     '\n      <div className="skill-list-item-meta">\n        <span className="skill-list-item-meta-item">\n          <Download size={14} aria-hidden="true" /> {downloads}\n        </span>\n      </div>',
     "",
   ),
-
-  // A plugin's page is a city plugin's page (urbicana/pages/CityPlugin.tsx).
-  // Its loader read ClawHub's package API; the city plugin is known here.
-  {
-    file: PLUGIN_PAGE,
-    name: "copy:plugin page loader",
-    pattern: /  loader: async \(\{ location, params \}\) => \{\n    const data = await loadPluginDetail\(params\.name\);[\s\S]*?\n    return data;\n  \},\n/g,
-    to: "  loader: () => undefined,\n",
-  },
-  phrase(PLUGIN_PAGE, "  component: PluginDetailRoute,\n});", "  component: CityPluginRoute,\n});\n\nimport { CityPluginRoute } from \"../../../urbicana/pages/CityPlugin\";\nimport { cityPluginHeadData } from \"../../../urbicana/city-plugins\";"),
-  // Its title and description: the city plugin's, through ClawHub's head.
-  phrase(
-    PLUGIN_PAGE,
-    "head: ({ params, loaderData }) => pluginDetailHead(params.name, loaderData),",
-    "head: ({ params }) => pluginDetailHead(params.name, cityPluginHeadData(params.name) as never),",
-  ),
-  // The tiles of ClawHub's home apps section read the home page's tokens;
-  // ClawHub maps them onto the shared ones for its dashboard. The same
-  // mapping for the plugin page, where a city plugin shows its tiles.
-  phrase(STYLES, ".dashboard-route {\n  --dashboard-row-grid", ".dashboard-route,\n.plugin-detail-page {\n  --dashboard-row-grid"),
 
   // Navigation (header tabs and footer "Browse" / "Publish").
   phrase(NAV, 'label: "Skills"', `label: "${services}"`),

@@ -68,10 +68,21 @@ const PLUGINS_PAGE = "src/routes/plugins/index.tsx";
 const PLUGIN_PAGE = "src/routes/plugins/$name.tsx";
 const PUBLIC_API_URL = "src/lib/publicApiUrl.ts";
 const PLUGIN_ROW = "src/components/PluginListItem.tsx";
+const OWNER_ROUTE = "src/lib/ownerRoute.ts";
 
 const { service, services, plugins, plugin, verified, agents } = WORDS;
 
 export const FILE_RULES: FileRule[] = [
+  // An agent's handle is its member's profile slug, up to 53 characters on
+  // Rails (measured 2026-10-09: "pot8os-cadce1bc-5d04-4300-9542-ef951bb2d178"
+  // is 46); ClawHub caps an owner segment at GitHub's 40, so every longer
+  // agent's pages answered not found. The cap is raised to 100.
+  phrase(
+    OWNER_ROUTE,
+    "const OWNER_ROUTE_HANDLE_PATTERN = /^[a-zA-Z0-9](?:[a-zA-Z0-9._-]{0,38}[a-zA-Z0-9])?$/;",
+    "const OWNER_ROUTE_HANDLE_PATTERN = /^[a-zA-Z0-9](?:[a-zA-Z0-9._-]{0,98}[a-zA-Z0-9])?$/;",
+  ),
+
   // The plugins catalogue is "Plug into your city" (city-plugins.ts); its
   // items come from data/http.ts.
   phrase(PLUGINS_PAGE, '<h1 className="browse-title">Plugins</h1>', '<h1 className="browse-title">Plug into your city</h1>'),

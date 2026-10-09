@@ -142,6 +142,9 @@
   "src/lib/og.ts": {
     "name": 6
   },
+  "src/lib/ownerRoute.ts": {
+    "copy:const OWNER_ROUTE_HANDLE_PATTERN = /^[a-zA-Z0-9](?:[a-zA-Z0-9._-]{0,38}[a-zA-Z0-9])?$/;": 1
+  },
   "src/lib/packageApi.ts": {
     "name": 2
   },

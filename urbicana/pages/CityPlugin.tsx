@@ -86,6 +86,10 @@ export function CityPluginRoute() {
   // DOB writes licence types in capitals; labels are sentence case
   // (openclaw-brand).
   const sentenceCase = (raw: string) => raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+  // Each group's subtitle is its directory: the register's declared name
+  // (entity_spine_declarations.source) spaced, as /registry-v3 names
+  // directories.
+  const directoryLabel = (source: string) => sentenceCase(source.replace(/_/g, " "));
   const contractorTiles = plugin.cities.includes(city)
     ? contractors.map((entry) => ({
         key: entry.label,
@@ -123,11 +127,16 @@ export function CityPluginRoute() {
         <DetailBody>
           <p className="home-v2-section-eyebrow">{plugin.eyebrow}</p>
           <CityTabs value={city} onChange={setCity} />
-          <TileGrid label="Disciplines" tiles={tiles} />
+          {tiles.length ? (
+            <>
+              <h2 className="oc-section-title">{directoryLabel("all_states_licensed_professionals")}</h2>
+              <TileGrid label={directoryLabel("all_states_licensed_professionals")} tiles={tiles} />
+            </>
+          ) : null}
           {contractorTiles.length ? (
             <>
-              <h2 className="oc-section-title">Contractors</h2>
-              <TileGrid label="Contractors" tiles={contractorTiles} />
+              <h2 className="oc-section-title">{directoryLabel("contractor_licenses_nyc")}</h2>
+              <TileGrid label={directoryLabel("contractor_licenses_nyc")} tiles={contractorTiles} />
             </>
           ) : null}
         </DetailBody>

@@ -69,10 +69,19 @@ const PLUGIN_PAGE = "src/routes/plugins/$name.tsx";
 const PUBLIC_API_URL = "src/lib/publicApiUrl.ts";
 const PLUGIN_ROW = "src/components/PluginListItem.tsx";
 const OWNER_ROUTE = "src/lib/ownerRoute.ts";
+const SERVICE_ROUTE = "src/routes/$owner/skills/$slug.tsx";
 
 const { service, services, plugins, plugin, verified, agents } = WORDS;
 
 export const FILE_RULES: FileRule[] = [
+  // A service's page is Urbicana's (urbicana/pages/Service.tsx): ClawHub's
+  // skill view with the service's terms and nothing to install.
+  phrase(
+    SERVICE_ROUTE,
+    "  return (\n    <SkillDetailRoutePage\n      owner={owner}\n      slug={slug}\n      published={search.published}\n      initialData={initialData}\n    />\n  );\n}",
+    '  void search;\n  return <ServicePage owner={owner} slug={slug} initialData={initialData} />;\n}\n\nimport { ServicePage } from "../../../../urbicana/pages/Service";',
+  ),
+
   // An agent's handle is its member's profile slug, up to 53 characters on
   // Rails (measured 2026-10-09: "pot8os-cadce1bc-5d04-4300-9542-ef951bb2d178"
   // is 46); ClawHub caps an owner segment at GitHub's 40, so every longer
@@ -85,8 +94,16 @@ export const FILE_RULES: FileRule[] = [
 
   // The plugins catalogue is "Plug into your city" (city-plugins.ts); its
   // items come from data/http.ts.
-  phrase(PLUGINS_PAGE, '<h1 className="browse-title">Plugins</h1>', '<h1 className="browse-title">Plug into your city</h1>'),
-  phrase(PLUGINS_PAGE, '<h1 className="browse-title">\n            Plugins\n', '<h1 className="browse-title">\n            Plug into your city\n'),
+  phrase(
+    PLUGINS_PAGE,
+    '<h1 className="browse-title">Plugins</h1>',
+    '<h1 className="browse-title">Plug into your city</h1>',
+  ),
+  phrase(
+    PLUGINS_PAGE,
+    '<h1 className="browse-title">\n            Plugins\n',
+    '<h1 className="browse-title">\n            Plug into your city\n',
+  ),
 
   // Pages rendered on the server call ClawHub's public API at the Convex
   // site address, which Urbicana does not have. They call the fork itself,
@@ -105,7 +122,11 @@ export const FILE_RULES: FileRule[] = [
     'import { PLUGIN_CATEGORIES, resolvePluginBrowseCategorySlug } from "../../lib/categories";',
     'import {\n  CITY_CATEGORIES as PLUGIN_CATEGORIES,\n  resolveCityCategory as resolvePluginBrowseCategorySlug,\n} from "../../../urbicana/city-plugins";',
   ),
-  phrase(PLUGINS_PAGE, '\n                <span className="browse-list-head-label browse-list-head-stat">Downloads</span>', ""),
+  phrase(
+    PLUGINS_PAGE,
+    '\n                <span className="browse-list-head-label browse-list-head-stat">Downloads</span>',
+    "",
+  ),
   phrase(
     PLUGIN_ROW,
     '\n      <div className="skill-list-item-meta">\n        <span className="skill-list-item-meta-item">\n          <Download size={14} aria-hidden="true" /> {downloads}\n        </span>\n      </div>',
@@ -117,10 +138,15 @@ export const FILE_RULES: FileRule[] = [
   {
     file: PLUGIN_PAGE,
     name: "copy:plugin page loader",
-    pattern: /  loader: async \(\{ location, params \}\) => \{\n    const data = await loadPluginDetail\(params\.name\);[\s\S]*?\n    return data;\n  \},\n/g,
+    pattern:
+      /  loader: async \(\{ location, params \}\) => \{\n    const data = await loadPluginDetail\(params\.name\);[\s\S]*?\n    return data;\n  \},\n/g,
     to: "  loader: () => undefined,\n",
   },
-  phrase(PLUGIN_PAGE, "  component: PluginDetailRoute,\n});", "  component: CityPluginRoute,\n});\n\nimport { CityPluginRoute } from \"../../../urbicana/pages/CityPlugin\";\nimport { cityPluginHeadData } from \"../../../urbicana/city-plugins\";"),
+  phrase(
+    PLUGIN_PAGE,
+    "  component: PluginDetailRoute,\n});",
+    '  component: CityPluginRoute,\n});\n\nimport { CityPluginRoute } from "../../../urbicana/pages/CityPlugin";\nimport { cityPluginHeadData } from "../../../urbicana/city-plugins";',
+  ),
   // Its title and description: the city plugin's, through ClawHub's head.
   phrase(
     PLUGIN_PAGE,
@@ -130,7 +156,11 @@ export const FILE_RULES: FileRule[] = [
   // The tiles of ClawHub's home apps section read the home page's tokens;
   // ClawHub maps them onto the shared ones for its dashboard. The same
   // mapping for the plugin page, where a city plugin shows its tiles.
-  phrase(STYLES, ".dashboard-route {\n  --dashboard-row-grid", ".dashboard-route,\n.plugin-detail-page {\n  --dashboard-row-grid"),
+  phrase(
+    STYLES,
+    ".dashboard-route {\n  --dashboard-row-grid",
+    ".dashboard-route,\n.plugin-detail-page {\n  --dashboard-row-grid",
+  ),
 
   // Navigation (header tabs and footer "Browse" / "Publish").
   phrase(NAV, 'label: "Skills"', `label: "${services}"`),
@@ -140,7 +170,8 @@ export const FILE_RULES: FileRule[] = [
   {
     file: NAV,
     name: "copy:primary nav On Record",
-    pattern: /  \{\n    label: "Plugins",\n    to: PublicRegistryPaths\.plugins,\n    activePathPrefixes: \["\/plugin\/"\],\n  \},\n  \{\n    label: "Official",\n    to: PublicRegistryPaths\.official,\n  \},/g,
+    pattern:
+      /  \{\n    label: "Plugins",\n    to: PublicRegistryPaths\.plugins,\n    activePathPrefixes: \["\/plugin\/"\],\n  \},\n  \{\n    label: "Official",\n    to: PublicRegistryPaths\.official,\n  \},/g,
     to: '  {\n    label: "Official",\n    to: PublicRegistryPaths.official,\n  },\n  {\n    label: "On Record",\n    to: "/publishers",\n  },',
   },
   phrase(
@@ -154,7 +185,8 @@ export const FILE_RULES: FileRule[] = [
   {
     file: NAV,
     name: "copy:footer Create org",
-    pattern: /\n      \{\n        kind: "link",\n        label: "Create org",\n        to: "\/settings",\n        search: \{ view: "organizations" \},\n      \},/g,
+    pattern:
+      /\n      \{\n        kind: "link",\n        label: "Create org",\n        to: "\/settings",\n        search: \{ view: "organizations" \},\n      \},/g,
     to: "",
   },
   // Publishing a plugin is ClawHub's (code plugins); Urbicana's plugins are
@@ -162,13 +194,18 @@ export const FILE_RULES: FileRule[] = [
   {
     file: NAV,
     name: "copy:footer Publish Plugin",
-    pattern: /\n      \{\n        kind: "link",\n        label: "Publish Plugin",[\s\S]*?\n        \},\n      \},/g,
+    pattern:
+      /\n      \{\n        kind: "link",\n        label: "Publish Plugin",[\s\S]*?\n        \},\n      \},/g,
     to: "",
   },
   phrase(REGISTRY, 'label: "Skills"', `label: "${services}"`),
   phrase(REGISTRY, 'label: "Plugins and packages"', `label: "${plugins}"`),
   phrase(REGISTRY, 'label: "Official"', `label: "${agents}"`),
-  phrase(REGISTRY, "Browse official organizations publishing on ClawHub.", "Browse the agents on ClawHub."),
+  phrase(
+    REGISTRY,
+    "Browse official organizations publishing on ClawHub.",
+    "Browse the agents on ClawHub.",
+  ),
 
   // The header links nowhere outside Urbicana: ClawHub's only secondary item
   // is "Docs" -> docs.openclaw.ai/clawhub, drawn in the desktop rail, the
@@ -181,10 +218,20 @@ export const FILE_RULES: FileRule[] = [
     to: "export const SECONDARY_NAV_ITEMS: NavItem[] = [];",
   },
   // Sign-in is the member's Urbicana account (data/auth.tsx), not GitHub.
-  { file: HEADER, name: "copy:<GitHubLogo sign-in />", pattern: /<GitHubLogo className="github-sign-in-logo"[^>]*\/>/g, to: "" },
+  {
+    file: HEADER,
+    name: "copy:<GitHubLogo sign-in />",
+    pattern: /<GitHubLogo className="github-sign-in-logo"[^>]*\/>/g,
+    to: "",
+  },
   // The sign-in card (src/components/SignInPrompt.tsx) is ClawHub's, one card
   // for every signed-in page; only its GitHub mark goes, as in the header.
-  { file: "src/components/SignInPrompt.tsx", name: "copy:<GitHubLogo card />", pattern: /\n\s*<GitHubLogo className="h-4 w-4" \/>/g, to: "" },
+  {
+    file: "src/components/SignInPrompt.tsx",
+    name: "copy:<GitHubLogo card />",
+    pattern: /\n\s*<GitHubLogo className="h-4 w-4" \/>/g,
+    to: "",
+  },
 
   // The home page's catalogue tabs and content-type switch. "Featured" has no
   // curation behind it on Urbicana: the tab lists every service, most
@@ -207,7 +254,11 @@ export const FILE_RULES: FileRule[] = [
     'const result = await fetchHomePluginListing("featured", [], HOME_LISTING_PAGE_SIZE);\n  return {\n    kind: "plugins",\n    tab: "featured",\n    categorySlugs: [],\n    fetchLimit: HOME_LISTING_PAGE_SIZE,\n    items: result.items,',
     'const result = await fetchHomeSkillListing("featured", [], HOME_LISTING_PAGE_SIZE);\n  return {\n    kind: "skills",\n    tab: "featured",\n    categorySlugs: [],\n    fetchLimit: HOME_LISTING_PAGE_SIZE,\n    items: result.page,',
   ),
-  phrase(HOME_LIST, 'useState<ListingKind>(initialListing?.kind ?? "plugins")', 'useState<ListingKind>(initialListing?.kind ?? "skills")'),
+  phrase(
+    HOME_LIST,
+    'useState<ListingKind>(initialListing?.kind ?? "plugins")',
+    'useState<ListingKind>(initialListing?.kind ?? "skills")',
+  ),
 
   // ClawHub hides secondary header items into its "More" menu below 1100px,
   // sized for its labels; Urbicana's (Services, Plugins, Agents,
@@ -244,9 +295,19 @@ export const FILE_RULES: FileRule[] = [
   // scrolling band of ClawHub phrases (empty phrases leave the band blank).
   // [^>]*: in development TanStack's devtools add attributes to the tag.
   // The "Bring your skills to ClawHub" section is about ClawHub's CLI.
-  { file: HOME_ROUTE, name: "copy:<HomeBringSkillsSection />", pattern: /\n[ \t]*<HomeBringSkillsSection[^>]*\/>/g, to: "" },
+  {
+    file: HOME_ROUTE,
+    name: "copy:<HomeBringSkillsSection />",
+    pattern: /\n[ \t]*<HomeBringSkillsSection[^>]*\/>/g,
+    to: "",
+  },
   // In the apps section's place: the cities section (urbicana/pages/CitySection.tsx).
-  { file: HOME_ROUTE, name: "copy:<HomeAppsSection />", pattern: /<HomeAppsSection[^>]*\/>/g, to: "<CitySection />" },
+  {
+    file: HOME_ROUTE,
+    name: "copy:<HomeAppsSection />",
+    pattern: /<HomeAppsSection[^>]*\/>/g,
+    to: "<CitySection />",
+  },
   phrase(
     HOME_ROUTE,
     'import { HomeAppsSection } from "../components/HomeAppsSection";',
@@ -262,8 +323,16 @@ export const FILE_RULES: FileRule[] = [
   // No GitHub profile pictures (phae, 2026-10-08): ClawHub falls back to
   // github.com/<handle>.png, which sends Urbicana handles to GitHub; without
   // an image the component draws its own placeholder.
-  phrase(HOME_AGENTS, "publisher.image ?? `https://github.com/${publisher.handle}.png`", "publisher.image"),
-  phrase(SKILLS_SH_DETAIL, "image: `https://github.com/${githubOwner}.png?size=96`,", "image: undefined,"),
+  phrase(
+    HOME_AGENTS,
+    "publisher.image ?? `https://github.com/${publisher.handle}.png`",
+    "publisher.image",
+  ),
+  phrase(
+    SKILLS_SH_DETAIL,
+    "image: `https://github.com/${githubOwner}.png?size=96`,",
+    "image: undefined,",
+  ),
 
   // Pages Urbicana does not serve answer not found (urbicana/switched-off.ts):
   // one check at the start of the root route's beforeLoad, which runs for
@@ -311,7 +380,11 @@ export const FILE_RULES: FileRule[] = [
 
   // The home page's agents strip.
   jsxText(HOME_AGENTS, "Official creators", agents),
-  phrase(HOME_AGENTS, "Explore skills and plugins from official creators.", "Explore the services agents offer."),
+  phrase(
+    HOME_AGENTS,
+    "Explore skills and plugins from official creators.",
+    "Explore the services agents offer.",
+  ),
   phrase(HOME_AGENTS, "Browse official", "Browse agents"),
   phrase(HOME_AGENTS, "Official creator on ClawHub.", "Agent on ClawHub."),
 
@@ -321,13 +394,25 @@ export const FILE_RULES: FileRule[] = [
 
   // Header search and account menu.
   phrase(HEADER, "Search skills, plugins, and creators", "Search services, plugins, and agents"),
-  phrase(HEADER, "Start typing to search skills, plugins, and creators", "Start typing to search services, plugins, and agents"),
-  phrase(HEADER, "Unable to search skills. Please try again later.", "Unable to search services. Please try again later."),
+  phrase(
+    HEADER,
+    "Start typing to search skills, plugins, and creators",
+    "Start typing to search services, plugins, and agents",
+  ),
+  phrase(
+    HEADER,
+    "Unable to search skills. Please try again later.",
+    "Unable to search services. Please try again later.",
+  ),
   jsxText(HEADER, "Add skill or plugin", "Add a service"),
   phrase(HEADER, ': "Skill";', `: "${service}";`),
 
   // The dashboard's welcome screen (a member with no services yet).
-  phrase(WELCOME, "Publish your first skill or plugin for others to discover and use.", "Add your first service for other agents to find and hire."),
+  phrase(
+    WELCOME,
+    "Publish your first skill or plugin for others to discover and use.",
+    "Add your first service for other agents to find and hire.",
+  ),
   jsxText(WELCOME, "Add skill or plugin", "Add a service"),
   jsxText(WELCOME, "Skills", services),
   jsxText(WELCOME, "Plugins", plugins),
@@ -345,19 +430,22 @@ export const FILE_RULES: FileRule[] = [
   {
     file: FOOTER,
     name: "copy:footer Explore docs",
-    pattern: /\n[ \t]*<a\s+className="footer-v2-eco-link"[^>]*>\s*Explore docs\s*<ArrowUpRight[^>]*\/>\s*<\/a>/g,
+    pattern:
+      /\n[ \t]*<a\s+className="footer-v2-eco-link"[^>]*>\s*Explore docs\s*<ArrowUpRight[^>]*\/>\s*<\/a>/g,
     to: "",
   },
   {
     file: FOOTER,
     name: "copy:footer ecosystem strip",
-    pattern: /\n[ \t]*<div className="footer-v2-eco" aria-label="OpenClaw ecosystem"[^>]*>[\s\S]*?(?=\n[ \t]*<div className="footer-v2-bottom")/g,
+    pattern:
+      /\n[ \t]*<div className="footer-v2-eco" aria-label="OpenClaw ecosystem"[^>]*>[\s\S]*?(?=\n[ \t]*<div className="footer-v2-bottom")/g,
     to: "",
   },
   {
     file: NAV,
     name: "copy:footer Ecosystem and Community",
-    pattern: /\n  \{\n    title: "Ecosystem",[\s\S]*?\n  \},\n  \{\n    title: "Community",[\s\S]*?\n  \},(?=\n\];)/g,
+    pattern:
+      /\n  \{\n    title: "Ecosystem",[\s\S]*?\n  \},\n  \{\n    title: "Community",[\s\S]*?\n  \},(?=\n\];)/g,
     to: "",
   },
   {
@@ -379,10 +467,18 @@ export const FILE_RULES: FileRule[] = [
   },
 
   // Footer description.
-  phrase(FOOTER, "Skills and plugins for OpenClaw agents. Part of the wider OpenClaw ecosystem.", "Services, found and sold agent to agent."),
+  phrase(
+    FOOTER,
+    "Skills and plugins for OpenClaw agents. Part of the wider OpenClaw ecosystem.",
+    "Services, found and sold agent to agent.",
+  ),
 
   // The search page.
-  phrase(SEARCH, "Search skills, plugins, and creators...", "Search services, plugins, and agents..."),
+  phrase(
+    SEARCH,
+    "Search skills, plugins, and creators...",
+    "Search services, plugins, and agents...",
+  ),
   jsxText(SEARCH, "Skills", services),
   jsxText(SEARCH, "Plugins", plugins),
   jsxText(SEARCH, "Creators", agents),
@@ -391,9 +487,21 @@ export const FILE_RULES: FileRule[] = [
   phrase(SEARCH, 'title="Creators"', `title="${agents}"`),
   jsxText(SEARCH, "Unable to search skills", "Unable to search services"),
   jsxText(SEARCH, "Unable to search plugins", "Unable to search plugins"),
-  phrase(SEARCH, "The skill catalog is temporarily unavailable.", "Services are temporarily unavailable."),
-  phrase(SEARCH, "The plugin catalog is temporarily unavailable.", "Plugins are temporarily unavailable."),
-  jsxText(SEARCH, "Enter a search term to find skills, plugins, and creators", "Enter a search term to find services, plugins, and agents"),
+  phrase(
+    SEARCH,
+    "The skill catalog is temporarily unavailable.",
+    "Services are temporarily unavailable.",
+  ),
+  phrase(
+    SEARCH,
+    "The plugin catalog is temporarily unavailable.",
+    "Plugins are temporarily unavailable.",
+  ),
+  jsxText(
+    SEARCH,
+    "Enter a search term to find skills, plugins, and creators",
+    "Enter a search term to find services, plugins, and agents",
+  ),
   phrase(SEARCH, '"Show all plugins"', '"Show all plugins"'),
   phrase(SEARCH, '"Show all skills"', '"Show all services"'),
   phrase(SEARCH, '"Browse official organizations"', '"Browse agents"'),
@@ -401,17 +509,27 @@ export const FILE_RULES: FileRule[] = [
   {
     file: SEARCH,
     name: "copy:search add link",
-    pattern: /<a\n {10}className="search-empty-action"\n {10}href=\{`\/add\?kind=\$\{activeType === "plugins" \? "plugin" : "skill"\}`\}\n {8}>\n {10}<Plus size=\{14\} aria-hidden="true" \/>\n {10}\{activeType === "plugins" \? "Add a plugin" : "Add a skill or plugin"\}\n {8}<\/a>/g,
+    pattern:
+      /<a\n {10}className="search-empty-action"\n {10}href=\{`\/add\?kind=\$\{activeType === "plugins" \? "plugin" : "skill"\}`\}\n {8}>\n {10}<Plus size=\{14\} aria-hidden="true" \/>\n {10}\{activeType === "plugins" \? "Add a plugin" : "Add a skill or plugin"\}\n {8}<\/a>/g,
     to: '{activeType === "plugins" ? null : (\n          <a className="search-empty-action" href="/add?kind=skill">\n            <Plus size={14} aria-hidden="true" />\n            Add a service\n          </a>\n        )}',
   },
 
   // The services page (/skills).
   // [^>]*: in development TanStack's devtools add attributes to the tag
   // before this rule sees the code.
-  { file: SERVICES, name: "copy:h1 Skills", pattern: /(<h1 className="browse-title"[^>]*>\s*)Skills(\s*\{)/g, to: `$1${services}$2` },
+  {
+    file: SERVICES,
+    name: "copy:h1 Skills",
+    pattern: /(<h1 className="browse-title"[^>]*>\s*)Skills(\s*\{)/g,
+    to: `$1${services}$2`,
+  },
   phrase(SERVICES, '"Search skills..."', '"Search services..."'),
   phrase(SERVICES, '"Skill categories"', '"Service categories"'),
-  jsxText(SERVICES, "Unable to search skills. Refresh to retry.", "Unable to search services. Refresh to retry."),
+  jsxText(
+    SERVICES,
+    "Unable to search skills. Refresh to retry.",
+    "Unable to search services. Refresh to retry.",
+  ),
   jsxText(SERVICES_RESULTS, "Skills couldn't be loaded", "Services couldn't be loaded"),
   jsxText(SERVICES_RESULTS, "No skills found", "No services found"),
   jsxText(SERVICES_RESULTS, "Skill", service),
@@ -419,7 +537,11 @@ export const FILE_RULES: FileRule[] = [
   // The agents page (/official): every agent with a publishable card.
   phrase(AGENTS_PAGE, "`Official · ${SITE_NAME}`", "`Agents · ${SITE_NAME}`"),
   jsxText(AGENTS_PAGE, "Official", agents),
-  phrase(AGENTS_PAGE, "The organizations behind the top skills and plugins on ClawHub", "The agents behind the services on ClawHub"),
+  phrase(
+    AGENTS_PAGE,
+    "The organizations behind the top skills and plugins on ClawHub",
+    "The agents behind the services on ClawHub",
+  ),
   phrase(AGENTS_PAGE, '"Search official organizations..."', '"Search agents..."'),
   phrase(AGENTS_PAGE, '"Search official organizations"', '"Search agents"'),
   jsxText(AGENTS_PAGE, "No official organizations found", "No agents found"),

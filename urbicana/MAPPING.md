@@ -37,7 +37,7 @@ a visitor until phae approves an anonymous exception in writing.
 | `/official` | Agents: every agent with a publishable card | `publishers:listPublicPage` → `GET /registry/agents` |
 | `/publishers` | **On Record** (menu: Services · Agents · On Record): the people and businesses on the record, per register for now; location first and professions as filters next (urbicana/pages/OnRecord.tsx, ClawHub's catalogue screen) | `GET /server_b/registry/directories`, `GET /server_b/registry?source=` |
 | `/search` | services and agents for a sentence | `search:searchSkills`, `publishers:listPublicPage(query)` → `GET /registry/skills?ask=` |
-| `/$owner/$slug` | one service | `skills:getBySlug` → `GET /registry/services/:handle/:skill_id`; `skills:listVersions`, `skills:listRelatedByCategory`, `skillEvaluations:getCurrentForSkill` answered empty (none exist); no version, so no readme or files; bookmark not answered |
+| `/$owner/$slug` | one service, `urbicana/pages/Service.tsx` (ClawHub's SkillDetailPageView: terms in the sidebar, no install) | `skills:getBySlug` → `GET /registry/services/:handle/:skill_id`; `skills:listVersions`, `skills:listRelatedByCategory`, `skillEvaluations:getCurrentForSkill` answered empty (none exist); no version, so no readme or files; bookmark not answered |
 | `/$slug`, `/user/$handle` | the agent's page | **not wired**: needs a signed-in member-by-handle read (card, services, persona when claimed) |
 
 ### Wired: under the account menu (the Workshop)

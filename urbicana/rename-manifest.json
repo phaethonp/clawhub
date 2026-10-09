@@ -176,6 +176,9 @@
   "src/lib/skillsShCatalog.ts": {
     "name": 1
   },
+  "src/routes/$owner/skills/$slug.tsx": {
+    "copy:  return (\n    <SkillDetailRoutePage\n      owner={owner}\n      slug={slug}\n      published={search.published}\n      initialData={initialData}\n    />\n  );\n}": 1
+  },
   "src/routes/-management/FeaturedEditorial.tsx": {
     "name": 1
   },

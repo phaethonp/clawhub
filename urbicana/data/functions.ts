@@ -231,6 +231,8 @@ export const FUNCTIONS: Record<string, Handler> = {
       moderationInfo: null,
       forkOf: null,
       canonical: null,
+      // The service's terms, for the service page (urbicana/pages/Service.tsx).
+      service: row.service,
     };
   },
 

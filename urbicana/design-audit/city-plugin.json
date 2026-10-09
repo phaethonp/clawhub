@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 2,
+  "carapaceVersion": "v0.6.1",
+  "designSystemVersion": "v0.6.1",
+  "consumerSha": "b0061f3e",
+  "scope": "City plugin page: urbicana/pages/CityPlugin.tsx, urbicana/pages/CityTiles.tsx, urbicana/city-plugins.ts; rendered at /plugins/city-disciplines",
+  "summary": { "errors": 0, "warnings": 2, "info": 4 },
+  "findings": [
+    {
+      "id": "layout/card-overuse",
+      "severity": "warning",
+      "kind": "judgment",
+      "file": "urbicana/pages/CityPlugin.tsx",
+      "line": 139,
+      "message": "Each directory is a page section drawn as a floating card (Card with CardHeader and CardTitle).",
+      "remediation": "Draw the directory sections without a card around each; human review (hierarchy change).",
+      "reference": "openclaw-carapace SKILL.md, Interface Rules: \"Avoid nested decorative cards and page sections styled as floating cards.\""
+    },
+    {
+      "id": "layout/overflow",
+      "severity": "warning",
+      "kind": "mechanical",
+      "file": "urbicana/pages/CityTiles.tsx",
+      "line": 43,
+      "message": "At 375px, 8 contractor role names are cut with an ellipsis, short ones included (\"Journeyman\", \"Site safety\", \"General contractor\"): the home-page tile is sized for short app names.",
+      "remediation": "Let the role name use the row's width (no fixed tile column for long labels); human review (changes rendered content).",
+      "reference": "openclaw-carapace SKILL.md, Interface Rules: \"Keep text within its container at supported viewport sizes.\""
+    },
+    {
+      "id": "component/duplicate",
+      "severity": "info",
+      "kind": "judgment",
+      "file": "urbicana/copy.ts",
+      "line": 122,
+      "message": "The page uses ClawHub's home-route anatomy (home-v2-apps tiles and tabs, home-v2-section-eyebrow) on the plugin route; it renders only because this build rule extends the home page's private --hv2-* tokens to .plugin-detail-page.",
+      "remediation": "Compose the plugin route from the plugin page's own or shared components instead of the home section's; human review.",
+      "reference": "openclaw-carapace SKILL.md, Interface Rules: \"Compose shared classes from components.css before adding a one-off visual implementation.\""
+    },
+    {
+      "id": "copy/clarity",
+      "severity": "info",
+      "kind": "judgment",
+      "file": "urbicana/pages/CityPlugin.tsx",
+      "line": 80,
+      "message": "The professionals' roles show as bare codes (RA, PE, R, GC, PR, LA, S, L, P): their names come from dob_code_meanings, which holds them only after professionals_and_services_db PR #376 is deployed.",
+      "remediation": "Deploy PR #376; R, L and P stay codes until a DOB source defines them.",
+      "reference": "openclaw-design-audit rubric: copy/clarity"
+    },
+    {
+      "id": "copy/clarity",
+      "severity": "info",
+      "kind": "judgment",
+      "file": "urbicana/pages/CityPlugin.tsx",
+      "line": 93,
+      "message": "The directory subtitle lowercases the acronym in contractor_licenses_nyc: \"Contractor licenses nyc\".",
+      "remediation": "Keep acronyms in capitals when spacing a register's name; human review (copy).",
+      "reference": "openclaw-design-audit rubric: copy/clarity; openclaw-brand: sentence case"
+    },
+    {
+      "id": "layout/overflow",
+      "severity": "info",
+      "kind": "mechanical",
+      "file": "urbicana/pages/CityTiles.tsx",
+      "line": 11,
+      "message": "At 375px the city tabs row scrolls sideways: 3 of 6 tabs visible (668px of tabs in 335px). The page itself does not overflow; ClawHub's home section tabs scroll the same way.",
+      "remediation": "None required; noted for the review.",
+      "reference": "openclaw-carapace SKILL.md, Interface Rules: \"Keep text within its container at supported viewport sizes.\""
+    }
+  ]
+}

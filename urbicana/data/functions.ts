@@ -6,8 +6,10 @@
 // a direct call rejects), which is how a page that is not wired yet shows.
 // MAPPING.md says which page uses which name and what answers it.
 
+import { buildSkillDetailHref } from "../../src/lib/ownerRoute";
 import { RailsError, rails } from "./rails";
 import {
+  type RailsAgentRow,
   type RailsServiceRow,
   type RailsServicesPage,
   type RailsAgentsPage,
@@ -76,6 +78,21 @@ async function signedIn<T>(path: string, query: Record<string, string | number |
     return await rails<T>(path, { query });
   } catch (error) {
     if (error instanceof RailsError && error.status === 401) return null;
+    throw error;
+  }
+}
+
+// One agent by handle (GET /api/v1/registry/agents/:handle); null for a
+// visitor, an unknown handle or an unpublishable card.
+async function oneAgent(handle: unknown) {
+  const value = String(handle ?? "")
+    .trim()
+    .replace(/^@+/, "");
+  if (!value) return null;
+  try {
+    return await signedIn<RailsAgentRow>(`/registry/agents/${encodeURIComponent(value)}`, {});
+  } catch (error) {
+    if (error instanceof RailsError && error.status === 404) return null;
     throw error;
   }
 }
@@ -199,6 +216,37 @@ export const FUNCTIONS: Record<string, Handler> = {
       hasMore: Boolean(response?.next_cursor),
     };
   },
+  // One agent's page (/$handle, ClawHub's publisher profile): GET
+  // /api/v1/registry/agents/:handle, read from the member's Agent Card. Its
+  // published list is the services the card offers; it has no plugins,
+  // bookmarks, members or display manifest.
+  "publishers:getProfileByHandle": async (args) => {
+    const agent = await oneAgent(args.handle);
+    if (!agent) return null;
+    const { publishedItems: _items, ...profile } = toAgentListItem(agent);
+    return profile;
+  },
+  "publishers:listPublishedPage": async (args) => {
+    const agent = args.kind === "plugin" ? null : await oneAgent(args.handle);
+    const page = (agent?.services ?? []).map((service) => ({
+      _id: `${agent?.handle}/${service.id}`,
+      kind: "skill" as const,
+      slug: service.id,
+      displayName: service.name,
+      summary: service.description ?? null,
+      topics: service.tags ?? [],
+      icon: null,
+      href: buildSkillDetailHref(agent?.handle ?? "", service.id),
+      stars: 0,
+      isOfficial: false,
+      updatedAt: service.updated_at ? Date.parse(service.updated_at) : 0,
+    }));
+    return { page, isDone: true, continueCursor: "" };
+  },
+  "publishers:listStarredPage": async () => ({ page: [], isDone: true, continueCursor: "" }),
+  "publishers:getPublishedDisplayManifest": async () => null,
+  "publishers:listMembers": async () => null,
+
   // One service's page (/$owner/skills/$slug): GET /api/v1/registry/services/
   // :handle/:skill_id, as ClawHub's skills document. The owner is the agent's
   // handle and the slug the service's id on its card; without an owner there

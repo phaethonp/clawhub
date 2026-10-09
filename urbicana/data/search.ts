@@ -185,7 +185,7 @@ export function toListingEntry(row: RailsServiceRow) {
 }
 
 // GET /api/v1/registry/agents: every agent with a publishable card.
-type RailsAgentRow = {
+export type RailsAgentRow = {
   handle: string | null;
   name?: string | null;
   description?: string | null;

@@ -27,6 +27,7 @@ export function CityPluginRoute() {
   // What each role code means, as DOB defines it (dob_code_meanings, domain
   // applicant_professional_title). A code DOB does not define has no entry
   // and shows as recorded.
+  const [contractors, setContractors] = useState<Array<{ label: string; count: number }>>([]);
   const [meanings, setMeanings] = useState<Record<string, { meaning: string; description: string | null }>>({});
   useEffect(() => {
     if (!plugin) return;
@@ -37,6 +38,16 @@ export function CityPluginRoute() {
       })
       .catch(() => {
         if (!cancelled) setRoles([]);
+      });
+    // The contractors: each licence type of the DOB licence roll
+    // (contractor_licenses_nyc) with its count of active licences, from the
+    // existing GET /server_b/registry/contractor_licenses.
+    rails<{ contractor_licenses: Array<{ label: string; count: number }> }>("/server_b/registry/contractor_licenses")
+      .then((found) => {
+        if (!cancelled) setContractors([...found.contractor_licenses].sort((a, b) => b.count - a.count));
+      })
+      .catch(() => {
+        if (!cancelled) setContractors([]);
       });
     rails<Record<string, { meaning: string; description: string | null }>>("/server_b/registry/code_meanings", {
       query: { domain: "applicant_professional_title" },
@@ -72,6 +83,18 @@ export function CityPluginRoute() {
         icon: Users,
       }))
     : [];
+  // DOB writes licence types in capitals; labels are sentence case
+  // (openclaw-brand).
+  const sentenceCase = (raw: string) => raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+  const contractorTiles = plugin.cities.includes(city)
+    ? contractors.map((entry) => ({
+        key: entry.label,
+        name: sentenceCase(entry.label),
+        lines: [entry.count.toLocaleString()],
+        to: "/publishers",
+        icon: Users,
+      }))
+    : [];
 
   return (
     <main className="section detail-page-section plugin-detail-page">
@@ -101,6 +124,12 @@ export function CityPluginRoute() {
           <p className="home-v2-section-eyebrow">{plugin.eyebrow}</p>
           <CityTabs value={city} onChange={setCity} />
           <TileGrid label="Disciplines" tiles={tiles} />
+          {contractorTiles.length ? (
+            <>
+              <h2 className="oc-section-title">Contractors</h2>
+              <TileGrid label="Contractors" tiles={contractorTiles} />
+            </>
+          ) : null}
         </DetailBody>
       </DetailPageShell>
     </main>
